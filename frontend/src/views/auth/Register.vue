@@ -37,6 +37,7 @@
           <select v-model="role" class="w-full p-3 border rounded" required>
             <option value="buyer">Buyer</option>
             <option value="seller">Seller</option>
+            <option value="admin">Admin</option>
           </select>
         </div>
 

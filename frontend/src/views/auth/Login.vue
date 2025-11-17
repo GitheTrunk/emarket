@@ -67,7 +67,7 @@ const login = async () => {
   const role = user.user_metadata.role;
 
   // Debugging` 
-//   console.log("Logged in as:", role);
+  console.log("Logged in as:", role);
 
   if (role === "buyer") router.push("/buyer/dashboard");
   else if (role === "seller") router.push("/seller/dashboard");

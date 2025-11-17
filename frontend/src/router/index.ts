@@ -6,6 +6,7 @@ import Login from "@/views/auth/Login.vue";
 import Register from "@/views/auth/Register.vue";
 import ForgotPassword from "@/views/auth/ForgotPassword.vue";
 import UpdatePassword from "@/views/auth/UpdatePassword.vue";
+import HomePage from "@/views/HomePage.vue";
 
 // Role modules
 import buyerRoutes from "@/router/modules/buyer";
@@ -13,6 +14,7 @@ import sellerRoutes from "@/router/modules/seller";
 import adminRoutes from "@/router/modules/admin";
 
 const routes: RouteRecordRaw[] = [
+  {path: "/", name: "Home", component: HomePage },
   { path: "/login", name: "Login", component: Login },
   { path: "/register", name: "Register", component: Register },
   { path: "/forgot-password", name: "ForgotPassword", component: ForgotPassword },
@@ -22,7 +24,7 @@ const routes: RouteRecordRaw[] = [
   ...sellerRoutes,
   ...adminRoutes,
 
-  { path: "/:catchAll(.*)", redirect: "/login" },
+  { path: "/:catchAll(.*)", redirect: '/' },
 ];
 
 const router = createRouter({
