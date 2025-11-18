@@ -1,7 +1,7 @@
 <template>
   <div class="flex justify-center items-center h-screen bg-gray-100">
     <form @submit.prevent="login" class="bg-white p-8 rounded shadow w-96">
-      <h2 class="text-2xl font-bold mb-4 text-center">Login</h2>
+      <h2 class="text-2xl font-bold mb-4 text-center">Seller Login</h2>
 
       <input
         v-model="email"
@@ -28,12 +28,12 @@
       <Divider text="or continue with" class="mt-2"/>
 
       <button class="w-full mb-3 p-3 border rounded">
-        <i class="pi pi-google" style="color: red"></i>
+        <i class="pi pi-google" style="color: green"></i>
         Continue with Google
       </button>
       <p class="text-center text-gray-600">
         Don't have an account?
-        <router-link to="/register" class="text-blue-600 hover:underline">Register</router-link>
+        <router-link to="/seller/register" class="text-blue-600 hover:underline">Register</router-link>
       </p>
     </form>
   </div>

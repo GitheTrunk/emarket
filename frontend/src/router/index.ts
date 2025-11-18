@@ -1,12 +1,8 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
 import supabase from "@/lib/supabase";
  
-// Auth pages
-import Login from "@/views/auth/Login.vue";
-import Register from "@/views/auth/Register.vue";
-import ForgotPassword from "@/views/auth/ForgotPassword.vue";
-import UpdatePassword from "@/views/auth/UpdatePassword.vue";
-import HomePage from "@/views/HomePage.vue";
+// Publuic modules
+import publicRoutes from "@/router/modules/public";
 
 // Role modules
 import buyerRoutes from "@/router/modules/buyer";
@@ -14,12 +10,7 @@ import sellerRoutes from "@/router/modules/seller";
 import adminRoutes from "@/router/modules/admin";
 
 const routes: RouteRecordRaw[] = [
-  {path: "/", name: "Home", component: HomePage },
-  { path: "/login", name: "Login", component: Login },
-  { path: "/register", name: "Register", component: Register },
-  { path: "/forgot-password", name: "ForgotPassword", component: ForgotPassword },
-  { path: "/update-password", name: "UpdatePassword", component: UpdatePassword },
-
+  ...publicRoutes,
   ...buyerRoutes,
   ...sellerRoutes,
   ...adminRoutes,
@@ -36,12 +27,20 @@ const router = createRouter({
 router.beforeEach(async (to, _, next) => {
   const { data } = await supabase.auth.getUser();
   const user = data.user;
+  const requiredRole = to.meta.role;
 
   // Public routes
   if (!to.meta.role) return next();
 
   // Not logged in
   if (!user) return next("/login");
+
+  if(!user) {
+    if (requiredRole === 'buyer') return next("/buyer/login");
+    if (requiredRole === 'seller') return next("/seller/login");
+    if (requiredRole === 'admin') return next("/admin/login");
+    return next("/login");
+  }
 
   const role = user.user_metadata.role;
 

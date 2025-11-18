@@ -2,7 +2,7 @@
   <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4">
     <div class="bg-white p-8 shadow-lg rounded-lg w-full max-w-md">
       
-      <h2 class="text-3xl font-bold text-center mb-6">Create an Account</h2>
+      <h2 class="text-3xl font-bold text-center mb-6">Seller Create an Account</h2>
 
       <form @submit.prevent="registerUser">
 
@@ -30,17 +30,6 @@
           <input v-model="confirmPassword" type="password" class="w-full p-3 border rounded" required />
         </div>
 
-        <!-- Role Selection -->
-        <div class="mb-6">
-          <label class="block text-gray-700 mb-1">Select Role</label>
-
-          <select v-model="role" class="w-full p-3 border rounded" required>
-            <option value="buyer">Buyer</option>
-            <option value="seller">Seller</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
-
         <!-- Submit Button -->
         <button class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700">
           Create Account
@@ -49,7 +38,7 @@
 
       <p class="mt-4 text-center text-gray-600">
         Already have an account?
-        <router-link to="/login" class="text-blue-600">Login</router-link>
+        <router-link to="/seller/login" class="text-blue-600">Login</router-link>
       </p>
     </div>
   </div>
@@ -66,7 +55,6 @@ const fullName = ref('')
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
-const role = ref('buyer') // default role
 
 const registerUser = async () => {
   if (password.value !== confirmPassword.value) {
@@ -80,7 +68,7 @@ const registerUser = async () => {
     options: {
       data: {
         fullName: fullName.value,
-        role: role.value,   // Save role here
+        role: "seller", 
       }
     }
   })
