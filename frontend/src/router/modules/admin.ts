@@ -1,13 +1,20 @@
 import type { RouteRecordRaw } from "vue-router";
-import AdminDashboard from "@/views/admin/AdminDashboard.vue";
+import AdminLayout from "@/layouts/AdminLayout.vue";
 
 const adminRoutes: RouteRecordRaw[] = [
   {
-    path: "/admin/dashboard",
-    name: "AdminDashboard",
-    component: AdminDashboard,
+    path: "/admin",
+    component: AdminLayout,
     meta: { role: "admin" },
+    children: [
+      {
+        path: "dashboard",
+        name: "AdminDashboard",
+        component: () => import('@/views/admin/AdminDashboard.vue'),
+      },
+      ],
   },
+  
 ];
 
 export default adminRoutes;

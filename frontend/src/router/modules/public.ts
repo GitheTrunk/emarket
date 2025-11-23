@@ -1,15 +1,22 @@
 import type { RouteRecordRaw } from 'vue-router';
-import HomePage from '@/views/HomePage.vue';
-import ForgotPassword from '@/views/auth/ForgotPassword.vue';
-import UpdatePassword from '@/views/auth/UpdatePassword.vue';
-import NotFound from '@/shared/NotFound.vue';
+import DefaultLayout from '@/layouts/DefaultLayout.vue';
 
 const routes: RouteRecordRaw[] = [
-    {path: '/', name: 'HomePage', component: HomePage},
-    {path: '/forgot-password', name: 'ForgotPassword', component: ForgotPassword},
-    {path: '/update-password', name: 'UpdatePassword', component: UpdatePassword},
-
-    {path: '/:catchAll(.*)', name: 'NotFound', component: NotFound},
+    {
+        path: '/',
+        component: DefaultLayout,
+        children: [
+            {
+                path: '',
+                name: 'HomePage',
+                component: () => import('@/views/HomePage.vue'),
+            },
+            {path: 'forgot-password', name: 'ForgotPassword', component: () => import('@/views/auth/ForgotPassword.vue')},
+            {path: 'update-password', name: 'UpdatePassword', component: () => import('@/views/auth/UpdatePassword.vue')},
+        ]
+    },
+    
+    {path: '/:catchAll(.*)', redirect: "/"},
 ];
 
 

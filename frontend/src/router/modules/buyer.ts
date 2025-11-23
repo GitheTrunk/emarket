@@ -1,24 +1,28 @@
 import type { RouteRecordRaw } from "vue-router";
-import BuyerDashboard from "@/views/buyer/BuyerDashboard.vue";
-import BuyerLogin from "@/views/buyer/auth/BuyerLogin.vue";
-import BuyerRegister from "@/views/buyer/auth/BuyerRegister.vue";
+import BuyerLayout from "@/layouts/BuyerLayout.vue";
 
 const buyerRoutes: RouteRecordRaw[] = [
   {
-    path: "/buyer/login",
+    path: "/buyer/auth/login",
     name: "BuyerLogin",
-    component: BuyerLogin,
+    component: () => import('@/views/buyer/auth/BuyerLogin.vue'),
   },
   {
-    path: "/buyer/register",
+    path: "/buyer/auth/register",
     name: "BuyerRegister",
-    component: BuyerRegister,
+    component: () => import('@/views/buyer/auth/BuyerRegister.vue'),
   },
   {
-    path: "/buyer/dashboard",
-    name: "BuyerDashboard",
-    component: BuyerDashboard,
+    path: "/buyer",
+    component: BuyerLayout,
     meta: { role: "buyer" },
+    children: [
+      {
+        path: "dashboard",
+        name: "BuyerDashboard",
+        component: () => import('@/views/buyer/BuyerDashboard.vue'),
+      }
+    ]
   },
 ];
 

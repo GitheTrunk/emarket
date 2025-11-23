@@ -33,19 +33,19 @@ router.beforeEach(async (to, _, next) => {
   if (!to.meta.role) return next();
 
   // Not logged in
-  if (!user) return next("/login");
+  if (!user) return next();
 
   if(!user) {
-    if (requiredRole === 'buyer') return next("/buyer/login");
-    if (requiredRole === 'seller') return next("/seller/login");
+    if (requiredRole === 'buyer') return next("/buyer/auth/login");
+    if (requiredRole === 'seller') return next("/seller/auth/login");
     if (requiredRole === 'admin') return next("/admin/login");
-    return next("/login");
+    return next("/");
   }
 
   const role = user.user_metadata.role;
 
   // Wrong role
-  if (role !== to.meta.role) return next("/login");
+  if (role !== to.meta.role) return next("/");
 
   next();
 });

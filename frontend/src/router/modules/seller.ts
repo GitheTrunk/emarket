@@ -1,24 +1,28 @@
 import type { RouteRecordRaw } from "vue-router";
-import SellerDashboard from "@/views/seller/SellerDashboard.vue";
-import SellerLogin from "@/views/seller/auth/SellerLogin.vue";
-import SellerRegister from "@/views/seller/auth/SellerRegister.vue";
+import SellerLayout from "@/layouts/SellerLayout.vue";
 
 const sellerRoutes: RouteRecordRaw[] = [
   {
-    path: "/seller/login",
+    path: "/seller/auth/login",
     name: "SellerLogin",
-    component: SellerLogin,
+    component: () => import('@/views/seller/auth/SellerLogin.vue') ,
   },
   {
-    path: "/seller/register",
+    path: "/seller/auth/register",
     name: "SellerRegister",
-    component: SellerRegister,
+    component: () => import('@/views/seller/auth/SellerRegister.vue') ,
   },
   {
-    path: "/seller/dashboard",
-    name: "SellerDashboard",
-    component: SellerDashboard,
+    path: "/seller",
+    component: SellerLayout,
     meta: { role: "seller" },
+    children: [
+      {
+        path: "dashboard",
+        name: "SellerDashboard",
+        component: () => import("@/views/seller/SellerDashboard.vue"),
+      },
+    ],
   },
 ];
 
