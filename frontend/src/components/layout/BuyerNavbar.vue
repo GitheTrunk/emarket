@@ -29,7 +29,7 @@
 <script setup>
 
 import "primeicons/primeicons.css";
-import SearchBar from "../others/SearchBar.vue";
+import SearchBar from "../ui/SearchBar.vue";
 import { ref } from "vue";
 const searchQuery = ref("");
 const handleSearch = (query) => {
