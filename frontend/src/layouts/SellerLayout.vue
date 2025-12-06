@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-import SellerNavbar from "@/components/seller/SellerNavbar.vue";
+import SellerNavbar from "@/components/layout/SellerNavbar.vue";
 
 const logout = () => alert("Seller logged out");
 </script>
