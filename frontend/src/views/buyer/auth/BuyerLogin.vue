@@ -43,7 +43,7 @@
 import { ref } from "vue";
 import supabase from "@/lib/supabase";
 import { useRouter } from "vue-router";
-import Divider from "@/components/others/divider.vue";
+import Divider from "@/components/ui/Divider.vue";
 import "primeicons/primeicons.css";
 
 const router = useRouter();
