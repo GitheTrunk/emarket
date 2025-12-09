@@ -1,7 +1,7 @@
 <template>
   <div class="w-full bg-white shadow px-6 py-4 flex justify-between items-center">
     <router-link to="/">
-        <img src="@/assets/logo/E-Market.png" alt="E-Market" class="w-16 h-16"/>
+        <img src="@/assets/logo/img.png" alt="E-Market" class="w-16 h-16"/>
     </router-link>
 
     <div class="flex justify-between items-center gap-12">

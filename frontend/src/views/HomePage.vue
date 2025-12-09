@@ -1,53 +1,114 @@
-<template>
-  <div class="">
+import "@/assets/fonts.css";
 
-    <!-- Hero Section -->
-    <section class="flex flex-col md:flex-row items-center justify-between flex-grow px-8 py-20">
-      <div class="max-w-xl">
-        <h2 class="text-4xl font-bold leading-tight mb-4">
-          Your Modern Marketplace for Buyers & Sellers
-        </h2>
-        <p class="text-gray-600 mb-6">
-          E-Market connects buyers, sellers, admins and accountants into a single seamless platform built for speed and convenience.
-        </p>
-        <router-link
-          to="/register"
-          class="bg-blue-600 text-white px-6 py-3 rounded text-lg hover:bg-blue-700"
-        >
-          Join Now
-        </router-link>
+
+
+<template>
+  <div class="body">
+    <section class="hero">
+      <div class="hero-content">
+
+        <div class="hero-image">
+          <img src="@/assets/images/img.png" alt="Shopping image" />
+        </div>
+
+
+        <div class="hero-text">
+          <h1>E-Market</h1>
+
+          <p>
+            An E-market place where buyers and sellers are in one convenient place. Discover great
+            products, trusted sellers, and seamless shopping experiences. Whether you're here to buy
+            or sell, our platform makes every step simple, secure, and fast.
+          </p>
+
+          <button class="join-btn">JOIN US TODAY!!
+            <router-link to=""></router-link>
+          </button>
+        </div>
       </div>
 
-      <img
-        src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png"
-        alt="Marketplace"
-        class="w-80 opacity-90 mt-10 md:mt-0"
-      />
-    </section>
 
-    <!-- Features Section -->
-    <section class="py-16 px-8 bg-gray-50">
-      <h3 class="text-3xl font-bold text-center mb-10">Why Choose E-Market?</h3>
-      <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-        <div class="p-6 bg-white rounded shadow text-center">
-          <h4 class="text-xl font-bold mb-2">Fast & Secure Payments</h4>
-          <p class="text-gray-600">Secure checkout with real-time order tracking.</p>
-        </div>
-
-        <div class="p-6 bg-white rounded shadow text-center">
-          <h4 class="text-xl font-bold mb-2">Seller Dashboard</h4>
-          <p class="text-gray-600">Manage your products, inventory and orders effortlessly.</p>
-        </div>
-
-        <div class="p-6 bg-white rounded shadow text-center">
-          <h4 class="text-xl font-bold mb-2">Admin Power</h4>
-          <p class="text-gray-600">Control categories, sellers, promotions and reports.</p>
-        </div>
+      <div class="bottom-text">
+        No more scam risks or platform overload—discover, connect, and sell across Cambodia with just
+        one trusted marketplace
       </div>
     </section>
   </div>
 </template>
 
-<script setup>
+<style scoped>
+
+.body{
+  height: 3000px;
+  width: 100%;
+}
+.hero {
+  width: 100%;
+  padding: 60px 80px;
+  background: linear-gradient(to bottom, #ffffff, #ff7b00, #ff7b00, #ffffff);
+  color: white;
+  height: 700px;
+  font-family: 'Roboto Condensed', sans-serif;
+}
+
+
+.hero-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+  margin-bottom: 70px;
+
+}
+
+
+.hero-image img {
+  width: 380px;
+  max-width: 100%;
+}
+
+
+.hero-text {
+  max-width: 500px;
+
+}
+
+.hero-text h1 {
+  font-size: 48px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.hero-text p {
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.join-btn {
+  margin-top: 25px;
+  background: white;
+  color: #d9790a;
+  border: none;
+  padding: 14px 28px;
+  font-size: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+
+.bottom-text {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 500;
+  max-width: 900px;
+  margin: 0 auto;
+  color: white;
+
+}
+</style>
+
+
+<script setup lang="ts">
 
 </script>

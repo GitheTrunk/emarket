@@ -1,30 +1,94 @@
 <template>
-  <header class="w-full py-4 px-8 flex justify-between items-center bg-white shadow">
-    <h1 class="text-2xl font-bold text-blue-600">E-Market</h1>
+  <header class="navbar">
+    <!-- Logo -->
+    <div class="logo">
+      <img src="@/assets/logo/img.png" alt="E-Market" />
+    </div>
 
-    <nav class="flex gap-6 items-center">
-      
-      <router-link to="/" class="hover:text-blue-600">Home</router-link>
-
-      <div class="relative group">
-        <button class="text-gray-700 hover:text-blue-600">
-          Login
-        </button>
-
-        <div class="absolute hidden group-hover:block bg-white shadow rounded py-2 w-40">
-          <router-link to="/buyer/auth/login" class="block px-4 py-2 hover:bg-gray-100">Buyer Login</router-link>
-          <router-link to="/seller/auth/login" class="block px-4 py-2 hover:bg-gray-100">Seller Login</router-link>
-        </div>
-      </div>
-
-      <router-link
-        to="/buyer/auth/register"
-        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        Get Started
-      </router-link>
+    <!-- Menu -->
+    <nav class="menu">
+      <a href="#" >Home</a>
+      <a href="@/views/HomePage.vue">About us</a>
+      <a href="#">Blogs</a>
+      <a href="#">Contact us</a>
     </nav>
+
+    <!-- Search -->
+    <div class="search-box">
+      <span>
+        <input type="text" placeholder="What are you looking for?" />
+      </span>
+    </div>
+
+    <!-- Icons -->
+    <div class="icons">
+      <span>
+        <img class="pi pi-heart">
+      </span>
+      <span>
+        <img class="pi pi-shopping-cart">
+      </span>
+      <span>
+        <img class="pi pi-user">
+      </span>
+    </div>
   </header>
 </template>
 
-<script setup></script>
+<style scoped>
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 40px;
+  background: white;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-weight: 600;
+}
+
+/* Logo */
+.logo img {
+  height: 80px;
+  width: 80px;
+}
+
+/* Menu */
+.menu {
+  display: flex;
+  gap: 70px;
+}
+
+.menu a {
+  left: 100px;
+  text-decoration: none;
+  color: #FF7B00;
+  font-size: 18px;
+}
+
+
+.search-box {
+  position: relative;
+  left: 50px;
+}
+
+.search-box input {
+  width: 350px;
+  padding: 9px 35px 9px 12px;
+  border-radius: 6px;
+  background: #f2f2f2;
+}
+
+/* Icons */
+.icons {
+  display: flex;
+  gap: 15px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+
+</style>
+
+
+<script setup lang="ts">
+</script>
