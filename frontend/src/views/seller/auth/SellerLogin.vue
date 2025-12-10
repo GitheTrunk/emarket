@@ -11,13 +11,23 @@
         required
       />
 
-      <input
-        v-model="password"
-        type="password"
-        placeholder="Password"
-        class="w-full mb-3 p-3 border rounded"
-        required
-      />
+      <!--  Display password input with toggle visibility -->
+      <div class="relative w-full mb-3">
+        <input
+          v-model="password"
+          :type="showPassword ? 'text' : 'password'"
+          placeholder="Password"
+          class="w-full p-3 border rounded pr-10"
+          required
+        />
+        <button
+          type="button"
+          @click="toggleShowPassword"
+          class="absolute inset-y-0 right-0 flex items-center pr-3"
+        >
+          <i class="pi" :class="showPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+        </button>
+      </div>
 
       <button class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700">
         Login
@@ -50,6 +60,13 @@ const router = useRouter();
 
 const email = ref("");
 const password = ref("");
+
+// Display password input with toggle visibility funtionality
+const showPassword = ref(false);
+
+const toggleShowPassword = () => {
+  showPassword.value = !showPassword.value;
+};
 
 const login = async () => {
   const { data, error } = await supabase.auth.signInWithPassword({

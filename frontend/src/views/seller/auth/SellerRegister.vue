@@ -18,16 +18,22 @@
           <input v-model="email" type="email" class="w-full p-3 border rounded" required />
         </div>
 
-        <!-- Password -->
-        <div class="mb-4">
+        <!-- Password and password input with toggle visibility-->
+        <div class="mb-4 relative">
           <label class="block text-gray-700">Password</label>
-          <input v-model="password" type="password" class="w-full p-3 border rounded" required />
+          <input v-model="password" :type="showPassword ? 'text' : 'password'" class="w-full p-3 border rounded pr-10" required />
+          <button type="button" @click="toggleShowPassword" class="absolute inset-y-0 right-0 flex items-center pr-3" style="top: 1.5rem;">
+            <i class="pi" :class="showPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+          </button>
         </div>
 
-        <!-- Confirm Password -->
-        <div class="mb-4">
+        <!-- Confirm Password password input with toggle visibility -->
+        <div class="mb-4 relative">
           <label class="block text-gray-700">Confirm Password</label>
-          <input v-model="confirmPassword" type="password" class="w-full p-3 border rounded" required />
+          <input v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" class="w-full p-3 border rounded pr-10" required />
+          <button type="button" @click="toggleShowConfirmPassword" class="absolute inset-y-0 right-0 flex items-center pr-3" style="top: 1.5rem;">
+            <i class="pi" :class="showConfirmPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+          </button>
         </div>
 
         <!-- Submit Button -->
@@ -55,6 +61,18 @@ const fullName = ref('')
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
+
+// Display password input with toggle visibility functionality
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+
+const toggleShowPassword = () => {
+  showPassword.value = !showPassword.value
+}
+
+const toggleShowConfirmPassword = () => {
+  showConfirmPassword.value = !showConfirmPassword.value
+}
 
 const registerUser = async () => {
   if (password.value !== confirmPassword.value) {
