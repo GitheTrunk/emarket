@@ -18,5 +18,5 @@
 </template>
 
 <script setup>
-import BuyerNavbar from "@/components/buyer/BuyerNavbar.vue";
+import BuyerNavbar from "@/components/layout/BuyerNavbar.vue";
 </script>
