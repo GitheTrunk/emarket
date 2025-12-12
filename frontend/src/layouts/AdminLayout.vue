@@ -10,7 +10,7 @@
       <AdminNavbar />
 
       <main class="p-6">
-        <slot />
+        <router-view />
       </main>
 
     </div>
@@ -21,4 +21,5 @@
 <script setup>
 import AdminSidebar from "@/components/layout/AdminSidebar.vue";
 import AdminNavbar from "@/components/layout/AdminNavbar.vue";
+
 </script>
