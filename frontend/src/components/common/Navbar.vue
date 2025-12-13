@@ -8,19 +8,17 @@
     <!-- Menu -->
     <nav class="menu">
       <a href="#" >Home</a>
-      <a href="@/views/HomePage.vue">About us</a>
+      <a href="@/views/AboutUPage.vue.vue">About us</a>
       <a href="#">Blogs</a>
       <a href="#">Contact us</a>
     </nav>
 
-    <!-- Search -->
     <div class="search-box">
       <span>
         <input type="text" placeholder="What are you looking for?" />
       </span>
     </div>
 
-    <!-- Icons -->
     <div class="icons">
       <span>
         <img class="pi pi-heart">
@@ -84,6 +82,8 @@
   gap: 15px;
   font-size: 22px;
   cursor: pointer;
+  color: #FF7B00;
+  ;
 }
 
 
