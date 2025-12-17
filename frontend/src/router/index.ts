@@ -25,29 +25,33 @@ const router = createRouter({
 
 // Role Guard
 router.beforeEach(async (to, _, next) => {
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
-  const requiredRole = to.meta.role;
+  try {
+    const { data } = await supabase.auth.getUser();
+    const user = data.user;
+    const requiredRole = to.meta.role;
 
-  // Public routes
-  if (!to.meta.role) return next();
+    console.log("User:", user, "Required role:", requiredRole);
 
-  // Not logged in
-  if (!user) return next();
+    // Public routes
+    if (!requiredRole) return next();
 
-  if(!user) {
-    if (requiredRole === 'buyer') return next("/buyer/auth/login");
-    if (requiredRole === 'seller') return next("/seller/auth/login");
-    if (requiredRole === 'admin') return next("/admin/login");
-    return next("/");
+    if (!user) {
+      if (requiredRole === 'buyer') return next("/buyer/auth/login");
+      if (requiredRole === 'seller') return next("/seller/auth/login");
+      if (requiredRole === 'admin') return next("/admin/login");
+      return next("/");
+    }
+
+    const role = user.user_metadata?.role;
+
+    // Wrong role
+    if (role !== requiredRole) return next("/");
+
+    next();
+  } catch (error) {
+    console.error("Auth error:", error);
+    next();
   }
-
-  const role = user.user_metadata.role;
-
-  // Wrong role
-  if (role !== to.meta.role) return next("/");
-
-  next();
 });
 
 export default router;

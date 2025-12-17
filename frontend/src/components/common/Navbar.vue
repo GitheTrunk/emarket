@@ -1,6 +1,6 @@
 <template>
   <header class="w-full py-4 px-8 flex justify-between items-center bg-white shadow">
-    <h1 class="text-2xl font-bold text-blue-600">E-Market</h1>
+    <img src="@/assets/logo/E-Market.png" alt="E-Market" class="w-16 h-16"/>
 
     <nav class="flex gap-6 items-center">
       
