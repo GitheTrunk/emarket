@@ -1,50 +1,79 @@
 <template>
   <div class="homepage">
-    <!-- Hero Section -->
+
+
+    <!--HERO SECTIONS-->
     <section class="hero-section">
+
       <div class="hero-content">
+
+        <div class="hero-image">
+          <img src="@/assets/images/img.png" alt="img" />
+        </div>
+
+        <!--Greetings TEXT-->
         <div class="hero-text">
-          <h1 class="hero-title">Connect, Trade, Succeed</h1>
+          <h1 class="hero-title">E-Market</h1>
           <p class="hero-subtitle">
-            The Ultimate Marketplace Connecting Sellers with Serious Buyers. Start Your Business
-            Journey Today.
+            An E-market place where buyers and sellers are in one convenient place.
+            Discover great products, trusted sellers, and seamless shopping experiences.
+            Whether you're here to buy or sell, our platform makes every step simple, secure, and fast.
           </p>
+
+
+          <!--LOGIN BUTTONS-->
           <div class="hero-actions">
+
             <button class="btn btn-primary" @click="navigateToRegister('seller')">
               <i class="fas fa-store"></i> Start Selling
             </button>
+
             <button class="btn btn-secondary" @click="navigateToRegister('buyer')">
               <i class="fas fa-shopping-cart"></i> Start Buying
             </button>
+
           </div>
+
+          <!--DATA-->
+
           <div class="hero-stats">
+
+            <!--Active Sellers-->
             <div class="stat">
               <span class="stat-number">{{ formatNumber(stats.activeSellers) }}+</span>
               <span class="stat-label">Active Sellers</span>
             </div>
+
+            <!--Verified Buyers-->
             <div class="stat">
               <span class="stat-number">{{ formatNumber(stats.activeBuyers) }}+</span>
               <span class="stat-label">Verified Buyers</span>
             </div>
+
+            <!--SUCCESSFUL TRADES-->
             <div class="stat">
               <span class="stat-number">{{ formatNumber(stats.totalTransactions) }}+</span>
               <span class="stat-label">Successful Trades</span>
             </div>
+
           </div>
+
         </div>
-        <div class="hero-image">
-          <img src="@/assets/images/img.png" alt="Marketplace Illustration" />
-        </div>
+
       </div>
     </section>
 
-    <!-- Features Section -->
+
+
+    <!--FEATURES SECTION-->
     <section class="features-section">
+
       <div class="container">
-        <div class="section-header">
+        <div class="feature-header">
           <h2>Why Choose Our Platform</h2>
           <p>Designed for seamless buyer-seller interactions</p>
         </div>
+
         <div class="features-grid">
           <div class="feature-card" v-for="feature in features" :key="feature.id">
             <div class="feature-icon" :style="{ backgroundColor: feature.color }">
@@ -82,7 +111,7 @@
     <!-- Top Categories -->
     <section class="categories-section">
       <div class="container">
-        <div class="section-header">
+        <div class="category-header">
           <h2>Popular Categories</h2>
           <p>Browse products by category</p>
         </div>
@@ -215,6 +244,9 @@
   </div>
 </template>
 
+
+
+
 <script>
 export default {
   name: 'HomePage',
@@ -222,9 +254,9 @@ export default {
     return {
       activeTab: 'sellers',
       stats: {
-        activeSellers: 12500,
-        activeBuyers: 85000,
-        totalTransactions: 450000,
+        activeSellers: 125,
+        activeBuyers: 850,
+        totalTransactions: 4500,
       },
       features: [
         {
@@ -299,7 +331,7 @@ export default {
       featuredSellers: [
         {
           id: 1,
-          name: 'TechGadgets Inc.',
+          name: 'MAK AH ING',
           category: 'Electronics',
           rating: 4.8,
           listings: 245,
@@ -308,7 +340,7 @@ export default {
         },
         {
           id: 2,
-          name: 'FashionHub',
+          name: 'Ptas-Fashion',
           category: 'Clothing',
           rating: 4.9,
           listings: 189,
@@ -326,7 +358,7 @@ export default {
         },
         {
           id: 4,
-          name: 'AutoParts Pro',
+          name: 'Somnang AutoParts',
           category: 'Automotive',
           rating: 4.6,
           listings: 98,
@@ -337,7 +369,7 @@ export default {
       featuredBuyers: [
         {
           id: 1,
-          name: 'John Enterprises',
+          name: 'Sengleang Pro mix',
           interest: 'Bulk Electronics',
           purchases: 245,
           verified: true,
@@ -345,7 +377,7 @@ export default {
         },
         {
           id: 2,
-          name: 'Retail Chain Co.',
+          name: 'BOBACLAT',
           interest: 'Fashion Wholesale',
           purchases: 189,
           verified: true,
@@ -353,7 +385,7 @@ export default {
         },
         {
           id: 3,
-          name: 'Hotel Group',
+          name: 'JOMPEY Hotel',
           interest: 'Hospitality Supplies',
           purchases: 156,
           verified: true,
@@ -361,7 +393,7 @@ export default {
         },
         {
           id: 4,
-          name: 'University Dept.',
+          name: 'GIC',
           interest: 'Educational Materials',
           purchases: 98,
           verified: true,
@@ -372,7 +404,7 @@ export default {
         {
           id: 1,
           content: 'This platform revolutionized my small business. Found reliable buyers in days!',
-          name: 'Sarah Chen',
+          name: 'Ming Chantha',
           role: 'Fashion Seller',
           avatar: 'https://i.pravatar.cc/150?img=9',
         },
@@ -380,14 +412,14 @@ export default {
           id: 2,
           content:
             'As a buyer, I love the variety and quality of sellers. Saved 30% on procurement!',
-          name: 'Michael Rodriguez',
+          name: 'PU Johnson',
           role: 'Procurement Manager',
           avatar: 'https://i.pravatar.cc/150?img=10',
         },
         {
           id: 3,
           content: 'The secure payment system gives me peace of mind for large transactions.',
-          name: 'Emma Wilson',
+          name: 'Ming Leak',
           role: 'Electronics Wholesaler',
           avatar: 'https://i.pravatar.cc/150?img=11',
         },
@@ -417,27 +449,25 @@ export default {
 }
 </script>
 
+
+
+
 <style scoped>
 
 .homepage {
-  width: 100%;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Hero Section */
 .hero-section {
-  background: linear-gradient(to bottom, #ffffff, #ff7b00, #ff7b00, #ffffff);
+  background: linear-gradient(to bottom, #ffffff, #ff7b00 ,#ff7b00 );
   color: white;
   padding: 80px 20px;
 }
 
 .hero-content {
   max-width: 1200px;
-  //margin: 0 auto;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 60px;
@@ -549,19 +579,36 @@ export default {
 .section-header h2 {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #2c3e50;
+  color: #ff7b00;
   margin-bottom: 10px;
 }
 
 .section-header p {
   font-size: 1.1rem;
-  color: #7f8c8d;
+  color: #ff7b00;
 }
 
 /* Features Section */
 .features-section {
   padding: 100px 0;
-  background: #f8fafc;
+  background: linear-gradient(190deg, #ff7b00 50%, #f2f2f2 70%);
+}
+
+.feature-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.feature-header h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.feature-header p {
+  font-size: 1.1rem;
+  color: #ffffff;
 }
 
 .features-grid {
@@ -614,7 +661,7 @@ export default {
 /* How It Works */
 .how-it-works {
   padding: 100px 0;
-  background: white;
+  background: linear-gradient(190deg, #f2f2f2 30%, #ff7b00 70%);
 }
 
 .steps {
@@ -628,12 +675,16 @@ export default {
   position: relative;
   text-align: center;
   padding: 30px;
+  border-color: #ffffff;
+  border-style: solid;
+  width: 250px;
+  border-radius: 10px;
 }
 
 .step-number {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ff7b00 50%, #ffffff 100%);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -647,11 +698,11 @@ export default {
 .step-content h3 {
   font-size: 1.3rem;
   margin-bottom: 10px;
-  color: #2c3e50;
+  color: #ffffff;
 }
 
 .step-content p {
-  color: #64748b;
+  color: #f2f2f2;
 }
 
 .step-arrow {
@@ -659,15 +710,34 @@ export default {
   right: -15px;
   top: 50%;
   transform: translateY(-50%);
-  color: #cbd5e1;
-  font-size: 1.5rem;
+  font-size: 2rem;
+  color: #ff7b00;
+  width: 10px;
 }
 
 /* Categories Section */
 .categories-section {
   padding: 100px 0;
-  background: #f8fafc;
+  background: linear-gradient(190deg, #ff7b00 40%, #ffffff 80%);
 }
+
+.category-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.category-header h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.category-header p {
+  font-size: 1.1rem;
+  color: #ffffff;
+}
+
 
 .categories-grid {
   display: grid;
@@ -682,6 +752,7 @@ export default {
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  border-color: #ff7b00;
 }
 
 .category-card:hover {
@@ -718,7 +789,7 @@ export default {
 /* Users Section */
 .users-section {
   padding: 100px 0;
-  background: white;
+  background: linear-gradient(200deg, #ff7b00 10%, #f2f2f2 90%);
 }
 
 .tabs {
@@ -850,13 +921,13 @@ export default {
 
 .btn-outline {
   background: transparent;
-  border: 2px solid #667eea;
-  color: #667eea;
+  border: 2px solid #ff7b00;
+  color: #ff7b00;
   padding: 10px 24px;
 }
 
 .btn-outline:hover {
-  background: #667eea;
+  background: #ff7b00;
   color: white;
 }
 
@@ -873,15 +944,17 @@ export default {
 }
 
 .testimonial-card {
-  background: white;
+  background: linear-gradient(200deg, #f2f2f2 , #ff7b00 , #f2f2f2 );
   padding: 40px 30px;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border-style: double;
+  border-color: #ff7b00;
 }
 
 .testimonial-content {
   font-style: italic;
-  color: #4a5568;
+  color: #ffffff;
   line-height: 1.8;
   margin-bottom: 30px;
   position: relative;
@@ -912,19 +985,19 @@ export default {
 
 .testimonial-author h4 {
   margin: 0;
-  color: #2c3e50;
+  color: #f8fafc;
 }
 
 .testimonial-author p {
   margin: 0;
-  color: #64748b;
+  color: #f2f2f2;
   font-size: 0.9rem;
 }
 
 /* CTA Section */
 .cta-section {
   padding: 100px 0;
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  background: linear-gradient(150deg, #ff7b00 30%, #f2f2f2 100%);
   color: white;
 }
 
@@ -953,11 +1026,11 @@ export default {
 
 .btn-light {
   background: white;
-  color: #2c3e50;
+  color: #ff7b00;
 }
 
 .btn-dark {
-  background: #667eea;
+  background: #ff7b00;
   color: white;
 }
 

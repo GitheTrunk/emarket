@@ -8,7 +8,7 @@
     <!-- Menu -->
     <nav class="menu">
       <a href="#" >Home</a>
-      <a href="@/views/AboutUPage.vue.vue">About us</a>
+      <a href="@/views/AboutUPage.vue">About us</a>
       <a href="#">Blogs</a>
       <a href="#">Contact us</a>
     </nav>
