@@ -54,6 +54,7 @@
 import { ref } from 'vue'
 import supabase from '@/lib/supabase'
 import { useRouter } from 'vue-router'
+import 'primeicons/primeicons.css'
 
 const router = useRouter()
 
@@ -98,6 +99,6 @@ const registerUser = async () => {
   }
 
   alert("Account created! Check your email to verify.")
-  router.push('/buyer/login')
+  router.push('/buyer/auth/login')
 }
 </script>
