@@ -44,7 +44,7 @@
 
       <p class="mt-4 text-center text-gray-600">
         Already have an account?
-        <router-link to="/seller/login" class="text-blue-600">Login</router-link>
+        <router-link to="/seller/auth/login" class="text-blue-600">Login</router-link>
       </p>
     </div>
   </div>

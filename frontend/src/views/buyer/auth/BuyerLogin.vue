@@ -43,7 +43,7 @@
       </button>
       <p class="text-center text-gray-600">
         Don't have an account?
-        <router-link to="/buyer/register" class="text-blue-600 hover:underline">Register</router-link>
+        <router-link to="/buyer/auth/register" class="text-blue-600 hover:underline">Register</router-link>
       </p>
     </form>
   </div>

@@ -26,26 +26,34 @@ const router = createRouter({
 // Role Guard
 router.beforeEach(async (to, _, next) => {
   try {
-    const { data } = await supabase.auth.getUser();
-    const user = data.user;
     const requiredRole = to.meta.role;
 
-    console.log("User:", user, "Required role:", requiredRole);
+    console.log("Navigating to:", to.path, "Required role:", requiredRole);
 
-    // Public routes
+    // Public routes - no authentication required
     if (!requiredRole) return next();
 
-    if (!user) {
+    // For protected routes, check authentication
+    const { data, error } = await supabase.auth.getUser();
+    const user = data?.user;
+
+    if (error || !user) {
+      // User not authenticated
       if (requiredRole === 'buyer') return next("/buyer/auth/login");
       if (requiredRole === 'seller') return next("/seller/auth/login");
       if (requiredRole === 'admin') return next("/admin/login");
       return next("/");
     }
 
-    const role = user.user_metadata?.role;
+    const userRole = user.user_metadata?.role;
+    
+    console.log("User role:", userRole, "Required role:", requiredRole);
 
-    // Wrong role
-    if (role !== requiredRole) return next("/");
+    // Check if user has required role
+    if (userRole !== requiredRole) {
+      console.warn(`Access denied: User role ${userRole} doesn't match required role ${requiredRole}`);
+      return next("/");
+    }
 
     next();
   } catch (error) {
