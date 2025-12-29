@@ -16,6 +16,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
     "@supabase/supabase-js": "^2.81.1",
     "chart.js": "^4.5.1",
     "pinia": "^3.0.3",
