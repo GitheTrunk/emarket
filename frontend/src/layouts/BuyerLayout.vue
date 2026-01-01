@@ -10,7 +10,7 @@
 
       <!-- Page Content -->
       <main class="p-6">
-        <slot />
+        <router-view />
       </main>
 
     </div>
