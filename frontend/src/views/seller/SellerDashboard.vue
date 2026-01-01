@@ -6,7 +6,7 @@
                 <div class="bg-white rounded shadow-sm border border-gray-200 p-4">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-10 h-10 rounded bg-white flex items-center justify-center overflow-hidden">
-                            <img src="@/assets/logo/E-Market.png" alt="E-Market" class="w-full h-full object-contain" />
+                            <img src="@/assets/logo/img.png" alt="E-Market" class="w-full h-full object-contain" />
                         </div>
                         <div class="font-bold">Seller</div>
                     </div>
@@ -156,14 +156,17 @@
 
 <script setup lang="ts">
 import { ref, reactive, onUnmounted } from 'vue'
-import logo from '@/assets/logo/E-Market.png'
+import logo from '@/assets/logo/img.png'
+import supabase from '@/lib/supabase'
+import { createProduct } from '@/services/productService'
+import { uploadProductImage } from '@/services/storageService'
 
 const categories = ref<string[]>(['Electronics', 'Clothing', 'Home & Living', 'Books', 'Other'])
 const conditions = ref<string[]>(['New', 'Used - Like New', 'Used - Good', 'Used - Acceptable'])
 
 const form = reactive({
     title: '',
-    price: 0 as number | null,
+    price: 0,
     category: '',
     condition: '',
     categoryName: '',
@@ -205,10 +208,10 @@ function revokePreviews() {
 
 onUnmounted(() => revokePreviews())
 
-function onSubmit() {
-    console.log('submit', { ...form, files: files.value })
-    alert('Form submitted — check console for payload')
-}
+// function onSubmit() {
+//     console.log('submit', { ...form, files: files.value })
+//     alert('Form submitted — check console for payload')
+// }
 
 function onCancel() {
     form.title = ''
@@ -220,5 +223,48 @@ function onCancel() {
     files.value = []
     revokePreviews()
     previews.value = []
+}
+
+async function onSubmit() {
+  try {
+    // Validate required fields
+    if (!form.title || !form.price || !form.category || !form.description) {
+      alert('Please fill all required fields')
+      return
+    }
+
+    if (form.price <= 0) {
+      alert('Price must be greater than 0')
+      return
+    }
+
+    if (files.value.length === 0) {
+      alert('Please upload at least one image')
+      return
+    }
+
+    // Upload images
+    const imageUrls = await Promise.all(
+      files.value.map(file => uploadProductImage(file))
+    )
+
+    // Create product (note: condition & categoryName are not in schema, so they're ignored)
+    await createProduct({
+      title: form.title,
+      description: form.description,
+      price: form.price,
+      category: form.category,
+      stock: 1,
+      images: imageUrls,
+      location_lat: null,
+      location_lng: null
+    })
+
+    alert('Product created successfully 🎉')
+    onCancel()
+  } catch (err) {
+    console.error(err)
+    alert('Failed to create product: ' + (err as Error).message)
+  }
 }
 </script>

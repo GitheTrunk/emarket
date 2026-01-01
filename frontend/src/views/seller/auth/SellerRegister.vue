@@ -80,7 +80,7 @@ const registerUser = async () => {
     return
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: email.value,
     password: password.value,
     options: {
@@ -96,7 +96,22 @@ const registerUser = async () => {
     return
   }
 
+  // Create profile record for the new user
+  if (data.user) {
+    const { error: profileError } = await supabase.from('profiles').insert({
+      id: data.user.id,
+      full_name: fullName.value,
+      role: 'seller'
+    })
+
+    if (profileError) {
+      console.error('Profile creation error:', profileError)
+      alert('Account created but profile setup failed. Please contact support.')
+      return
+    }
+  }
+
   alert("Account created! Check your email to verify.")
-  router.push('/login')
+  router.push('/seller/auth/login')
 }
 </script>
