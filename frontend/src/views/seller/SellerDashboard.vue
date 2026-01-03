@@ -8,7 +8,7 @@
                         <div class="w-10 h-10 rounded bg-white flex items-center justify-center overflow-hidden">
                             <img src="@/assets/logo/img.png" alt="E-Market" class="w-full h-full object-contain" />
                         </div>
-                        <div class="font-bold">Seller</div>
+                        <div class="font-bold">Hi <span>{{ profiles }} <i class="pi pi-verified" style="color: green"></i></span></div>
                     </div>
 
                     <ul class="space-y-2">
@@ -50,20 +50,20 @@
                     </ul>
 
                     <div class="mt-6">
-                        <button class="w-full bg-gray-200 text-gray-800 py-2 rounded flex items-center gap-2 justify-center">Log out</button>
+                        <button @click="logout" class="w-full bg-gray-300 py-2 rounded flex items-center gap-2 justify-center hover:bg-red-500 text-white">Log out</button>
                     </div>
                 </div>
             </div>
 
             <!-- Right content -->
             <div class="flex-1">
-                <h1 class="text-4xl font-extrabold mb-4">Seller Dashboard</h1>
+                <!-- <h1 class="text-4xl font-extrabold mb-4">Seller Dashboard</h1> -->
 
                 <section class="bg-white rounded shadow border border-gray-200 p-6">
                     <h2 class="text-2xl font-bold mb-4">Create item</h2>
 
                     <form @submit.prevent="onSubmit" class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium mb-1">*Title item</label>
                                 <div class="relative">
@@ -77,6 +77,14 @@
                                 <div class="relative">
                                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-orange-400 rounded-l"></div>
                                     <input v-model.number="form.price" type="number" min="0" step="0.01" class="w-full pl-4 pl-6 rounded border border-gray-300 px-4 py-3" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium mb-1">*Stock</label>
+                                <div class="relative">
+                                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-orange-400 rounded-l"></div>
+                                    <input v-model.number="form.stock" type="number" min="0" step="1" class="w-full pl-4 pl-6 rounded border border-gray-300 px-4 py-3" />
                                 </div>
                             </div>
                         </div>
@@ -155,18 +163,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onUnmounted } from 'vue'
+import { ref, reactive, onUnmounted, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import 'primeicons/primeicons.css'
 import logo from '@/assets/logo/img.png'
 import supabase from '@/lib/supabase'
 import { createProduct } from '@/services/productService'
 import { uploadProductImage } from '@/services/storageService'
 
+const router = useRouter()
+
+const profiles = ref<string>('Seller')
 const categories = ref<string[]>(['Electronics', 'Clothing', 'Home & Living', 'Books', 'Other'])
 const conditions = ref<string[]>(['New', 'Used - Like New', 'Used - Good', 'Used - Acceptable'])
+
+async function fetchProfile() {
+    try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user && user.user_metadata?.fullName) {
+            profiles.value = user.user_metadata.fullName.toUpperCase()
+
+        }
+    } catch (err) {
+        console.error('Error fetching profile:', err)
+    }
+}
+
+onMounted(() => fetchProfile())
 
 const form = reactive({
     title: '',
     price: 0,
+    stock: 1,
     category: '',
     condition: '',
     categoryName: '',
@@ -216,6 +244,7 @@ onUnmounted(() => revokePreviews())
 function onCancel() {
     form.title = ''
     form.price = 0
+    form.stock = 1
     form.category = ''
     form.condition = ''
     form.categoryName = ''
@@ -228,15 +257,27 @@ function onCancel() {
 async function onSubmit() {
   try {
     // Validate required fields
-    if (!form.title || !form.price || !form.category || !form.description) {
-      alert('Please fill all required fields')
-      return
-    }
+        const categoryValue = form.category || form.categoryName.trim()
+
+        if (!form.title || !form.price || !form.description) {
+            alert('Please fill all required fields')
+            return
+        }
+
+        if (!categoryValue) {
+            alert('Please select a category or type a new one')
+            return
+        }
 
     if (form.price <= 0) {
       alert('Price must be greater than 0')
       return
     }
+
+        if (form.stock < 0) {
+            alert('Stock cannot be negative')
+            return
+        }
 
     if (files.value.length === 0) {
       alert('Please upload at least one image')
@@ -253,8 +294,8 @@ async function onSubmit() {
       title: form.title,
       description: form.description,
       price: form.price,
-      category: form.category,
-      stock: 1,
+            category: categoryValue,
+            stock: form.stock,
       images: imageUrls,
       location_lat: null,
       location_lng: null
@@ -266,5 +307,13 @@ async function onSubmit() {
     console.error(err)
     alert('Failed to create product: ' + (err as Error).message)
   }
+}
+
+function logout() {
+    supabase.auth.signOut().then(() => {
+        router.push('/')
+    }).catch((err) => {
+        console.error('Error logging out:', err)
+    })
 }
 </script>
