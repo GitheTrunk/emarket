@@ -22,6 +22,21 @@ const sellerRoutes: RouteRecordRaw[] = [
         name: "SellerDashboard",
         component: () => import("@/views/seller/SellerDashboard.vue"),
       },
+      {
+        path: "products",
+        name: "SellerProducts",
+        component: () => import("@/views/seller/SellerProducts.vue"),
+      },
+      {
+        path: "orders",
+        name: "SellerOrders",
+        component: () => import("@/views/seller/SellerOrders.vue"),
+      },
+      {
+        path: "analytics",
+        name: "SellerAnalytics",
+        component: () => import("@/views/seller/SellerAnalytics.vue"),
+      },
     ],
   },
 ];

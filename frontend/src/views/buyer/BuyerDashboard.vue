@@ -130,7 +130,7 @@
 
             <!-- Description -->
             <p class="text-sm text-gray-600 mb-3 line-clamp-2">
-              {{ product.description }}
+              {{ truncate(product.description, 50) }}
             </p>
 
             <!-- Price and Action -->
@@ -327,6 +327,11 @@ const filterProducts = () => {
 
 const sortProducts = () => {
   // Trigger reactive computation
+}
+
+const truncate = (text: string, max = 80) => {
+  if (!text) return ''
+  return text.length > max ? `${text.slice(0, max).trimEnd()}...` : text
 }
 
 const viewProduct = (product: Product) => {
