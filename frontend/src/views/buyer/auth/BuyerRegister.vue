@@ -82,7 +82,7 @@ const registerUser = async () => {
     return
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: email.value,
     password: password.value,
     options: {
