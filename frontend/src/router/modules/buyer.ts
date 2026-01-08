@@ -21,6 +21,16 @@ const buyerRoutes: RouteRecordRaw[] = [
         path: "dashboard",
         name: "BuyerDashboard",
         component: () => import('@/views/buyer/BuyerDashboard.vue'),
+      },
+      {
+        path: "wishlist",
+        name: "BuyerWishlist",
+        component: () => import('@/views/buyer/BuyerWishlist.vue'),
+      },
+      {
+        path: "cart",
+        name: "BuyerCart",
+        component: () => import('@/views/buyer/BuyerCart.vue'),
       }
     ]
   },

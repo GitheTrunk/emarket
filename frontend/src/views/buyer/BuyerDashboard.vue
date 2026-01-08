@@ -79,7 +79,7 @@
       </div>
 
       <!-- Products Grid -->
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-8">
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 pb-8">
         <div
           v-for="product in filteredProducts"
           :key="product.id"
@@ -112,6 +112,17 @@
                 Out of Stock
               </span>
             </div>
+
+            <!-- Wishlist Button -->
+            <button
+              @click.stop="toggleWishlist(product.id)"
+              class="absolute top-2 left-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+              :title="isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'"
+            >
+              <svg class="w-5 h-5" :class="isInWishlist(product.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </button>
           </div>
 
           <!-- Product Info -->
@@ -223,6 +234,19 @@
 
               <div class="flex gap-3">
                 <button
+                  @click="toggleWishlist(selectedProduct.id)"
+                  class="px-6 py-3 border-2 rounded-lg font-semibold transition-colors"
+                  :class="isInWishlist(selectedProduct.id) ? 'border-red-500 text-red-500 hover:bg-red-50' : 'border-gray-300 text-gray-700 hover:bg-gray-50'"
+                >
+                  <svg class="w-5 h-5 inline mr-2" :class="isInWishlist(selectedProduct.id) ? 'fill-red-500' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                  {{ isInWishlist(selectedProduct.id) ? 'In Wishlist' : 'Add to Wishlist' }}
+                </button>
+              </div>
+              
+              <div class="flex gap-3 mt-3">
+                <button
                   @click="addToCart(selectedProduct)"
                   :disabled="selectedProduct.stock === 0"
                   class="flex-1 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
@@ -249,6 +273,8 @@
 import { ref, computed, onMounted } from 'vue'
 import supabase from '@/lib/supabase'
 import type { Product } from '@/types/database'
+import { addToWishlist, removeProductFromWishlist, isInWishlist as checkWishlist } from '@/services/wishlistService'
+import { addToCart as addProductToCart } from '@/services/cartService'
 
 const products = ref<Product[]>([])
 const loading = ref(true)
@@ -258,6 +284,7 @@ const selectedCategory = ref('')
 const sortBy = ref('newest')
 const selectedProduct = ref<Product | null>(null)
 const currentImage = ref('')
+const wishlistProductIds = ref<Set<string>>(new Set())
 
 const categories = ref<string[]>(['Electronics', 'Clothing', 'Home & Living', 'Books', 'Other'])
 
@@ -344,10 +371,19 @@ const closeModal = () => {
   currentImage.value = ''
 }
 
-const addToCart = (product: Product) => {
-  // TODO: Implement cart functionality
-  alert(`Added "${product.title}" to cart!`)
-  console.log('Add to cart:', product)
+const addToCart = async (product: Product) => {
+  try {
+    if (product.stock === 0) {
+      alert('This product is out of stock')
+      return
+    }
+    
+    await addProductToCart(product.id, 1)
+    alert(`"${product.title}" added to cart!`)
+  } catch (err) {
+    console.error('Error adding to cart:', err)
+    alert(err instanceof Error ? err.message : 'Failed to add to cart')
+  }
 }
 
 const buyNow = (product: Product) => {
@@ -356,8 +392,45 @@ const buyNow = (product: Product) => {
   console.log('Buy now:', product)
 }
 
-onMounted(() => {
-  fetchProducts()
+const isInWishlist = (productId: string): boolean => {
+  return wishlistProductIds.value.has(productId)
+}
+
+const toggleWishlist = async (productId: string) => {
+  try {
+    if (isInWishlist(productId)) {
+      await removeProductFromWishlist(productId)
+      wishlistProductIds.value.delete(productId)
+      alert('Removed from wishlist')
+    } else {
+      await addToWishlist(productId)
+      wishlistProductIds.value.add(productId)
+      alert('Added to wishlist')
+    }
+  } catch (err) {
+    console.error('Error toggling wishlist:', err)
+    alert(err instanceof Error ? err.message : 'Failed to update wishlist')
+  }
+}
+
+const loadWishlistStatus = async () => {
+  // Load wishlist status for all products
+  const productIds = products.value.map(p => p.id)
+  const wishlistSet = new Set<string>()
+  
+  for (const productId of productIds) {
+    const inWishlist = await checkWishlist(productId)
+    if (inWishlist) {
+      wishlistSet.add(productId)
+    }
+  }
+  
+  wishlistProductIds.value = wishlistSet
+}
+
+onMounted(async () => {
+  await fetchProducts()
+  await loadWishlistStatus()
 })
 </script>
 
