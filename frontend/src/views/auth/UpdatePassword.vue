@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4">
     <div class="bg-white p-8 shadow-lg rounded-lg w-full max-w-md">
-      
+
       <h2 class="text-3xl font-bold text-center mb-6">Reset Your Password</h2>
       <p class="text-gray-600 text-center mb-6">
         Enter your new password below.
@@ -39,7 +39,7 @@
       </form>
 
       <p class="mt-4 text-center text-gray-600">
-        Back to 
+        Back to
         <router-link to="/login" class="text-blue-600 hover:underline">
           Login
         </router-link>

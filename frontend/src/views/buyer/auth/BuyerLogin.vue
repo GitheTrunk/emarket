@@ -1,29 +1,72 @@
 <template>
-  <div class="login-container">
-    <div class="login-box">
-      <h2>Log in as Supplier</h2>
-      <form @submit.prevent="login">
-        <div class="input-group">
-          <input type="text" placeholder="Username or Email" v-model="username" required />
+  <div class="login-page">
+    <div class="login-container">
+      <div class="login-card">
+
+        <div class="login-header">
+          <h2 class="title">Login</h2>
+          <p class="subtitle">Fill in the required information.</p>
         </div>
-        <div class="input-group">
-          <input type="password" placeholder="Password" v-model="password" required />
+
+        <form @submit.prevent="login" class="login-form">
+          <div class="form-group">
+            <label>Username or Email</label>
+            <div class="input-wrapper">
+              <i class="fas fa-user"></i>
+              <input
+                v-model="username"
+                type="text"
+                placeholder="Enter your username or email"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Password</label>
+            <div class="input-wrapper">
+              <i class="fas fa-lock"></i>
+              <input
+                v-model="password"
+                type="password"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="options">
+            <label class="remember-me">
+              <input type="checkbox" v-model="remember" />
+              <span>Remember me</span>
+            </label>
+            <router-link to="/forgot-password" class="forgot">Forgot password?</router-link>
+          </div>
+
+          <button type="submit" class="btn-submit" @click="navigateToRegister('buyer-dashboard')">
+            Log In
+          </button>
+
+
+          <div class="divider">
+            <span>or continue with</span>
+          </div>
+
+          <button type="button" class="btn-google" >
+            <i class="fab fa-google"></i>
+            Continue with Google
+          </button>
+
+
+        </form>
+
+        <div class="login-footer">
+          <p>
+            Don't have an account?
+            <router-link to="/buyer/auth/register">Sign Up</router-link>
+          </p>
         </div>
-        <div class="options">
-          <label>
-            <input type="checkbox" v-model="remember" /> Remember me!
-          </label>
-          <a href="#" class="forgot">Forget password?</a>
-        </div>
-        <button type="submit" class="login-btn">Log In</button>
-        <button type="button" class="google-btn">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" />
-          Sign up with Google
-        </button>
-      </form>
-      <p class="signup-text">
-        If You don't have account, <a href="#">Please Sign Up</a>
-      </p>
+      </div>
     </div>
   </div>
 </template>
@@ -39,102 +82,209 @@ export default {
     };
   },
   methods: {
-    login() {
-      alert(`Logging in as: ${this.username}`);
+
+    navigateToRegister(type) {
+      switch (type) {
+
+        case 'buyer-dashboard':
+          this.$router.push('/buyer/dashboard');
+          break;
+
+        default:
+          console.warn("Navigation type not recognized:", type);
+      }
     },
   },
 };
 </script>
 
 <style scoped>
-.login-container {
+.login-page {
+  min-height: 100vh;
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  height: 100vh;
-  background-color: #fff;
+  justify-content: center;
+  /* Matching Home Page Hero Gradient */
+  background: linear-gradient(to bottom, #ffffff, #ff7b00, #ff7b00);
+  font-family: 'Inter', sans-serif;
+  padding: 20px;
 }
 
-.login-box {
-  background: #FF7B00;
-  color: #fff;
+.login-container {
+  width: 100%;
+  max-width: 450px;
+}
+
+.login-card {
+  background: white;
   padding: 40px;
-  width: 50%;
-  height: 650px;
-  border-radius: 50px 0 0 50px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
-.login-box h2 {
+.login-header {
   text-align: center;
   margin-bottom: 30px;
 }
 
-.input-group {
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.form-group {
   margin-bottom: 20px;
 }
 
-.input-group input {
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper i {
+  position: absolute;
+  left: 15px;
+  color: #ff7b00;
+}
+
+.input-wrapper input {
   width: 100%;
-  padding: 10px;
-  border: none;
-  border-bottom: 1px solid #fff;
-  background: transparent;
-  color: #fff;
+  padding: 12px 12px 12px 45px;
+  border: 2px solid #f1f5f9;
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.3s ease;
   font-size: 14px;
 }
 
-.input-group input::placeholder {
-  color: #fff;
+.input-wrapper input:focus {
+  border-color: #ff7b00;
+  box-shadow: 0 0 0 4px rgba(255, 123, 0, 0.1);
 }
 
 .options {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  font-size: 0.85rem;
 }
 
-.options .forgot {
-  color: #eee;
-  text-decoration: underline;
-}
-
-.login-btn, .google-btn {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: none;
-  cursor: pointer;
-  border-radius: 5px;
-  font-weight: bold;
-}
-
-.login-btn {
-  background-color: #fff;
-  color: #e58c3a;
-}
-
-.google-btn {
-  background-color: transparent;
-  border: 1px solid #fff;
+.remember-me {
   display: flex;
-  justify-content: center;
   align-items: center;
-  color: #fff;
+  gap: 8px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.forgot {
+  color: #ff7b00;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: #ff7b00;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 10px;
+  transition: all 0.3s ease;
 }
 
-.signup-text {
+.btn-submit:hover {
+  background: #e66e00;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(255, 123, 0, 0.3);
+}
+
+.divider {
   text-align: center;
-  font-size: 12px;
-  margin-top: 10px;
+  margin: 25px 0;
+  position: relative;
 }
 
-.signup-text a {
-  color: #fff;
-  text-decoration: underline;
+.divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: #e2e8f0;
+  z-index: 1;
+}
+
+.divider span {
+  position: relative;
+  z-index: 2;
+  background: white;
+  padding: 0 15px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.btn-google {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  color: #2c3e50;
+  border: 2px solid #f1f5f9;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.btn-google img {
+  width: 20px;
+}
+
+.btn-google:hover {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.login-footer {
+  margin-top: 30px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.login-footer a {
+  color: #ff7b00;
+  font-weight: 700;
+  text-decoration: none;
 }
 </style>
-

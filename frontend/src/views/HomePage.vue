@@ -86,10 +86,10 @@
       </div>
     </section>
 
-    <!-- How It Works -->
+    <!-- Working steps -->
     <section class="how-it-works">
       <div class="container">
-        <div class="section-header">
+        <div class="section-header-step">
           <h2>How It Works</h2>
           <p>Simple steps to start trading</p>
         </div>
@@ -132,6 +132,7 @@
       </div>
     </section>
 
+
     <!-- Featured Sellers & Buyers -->
     <section class="users-section">
       <div class="container">
@@ -152,6 +153,8 @@
           </button>
         </div>
 
+
+        <!--featured sellers cards-->
         <div class="users-grid" v-if="activeTab === 'sellers'">
           <div class="user-card" v-for="seller in featuredSellers" :key="seller.id">
             <div class="user-avatar">
@@ -178,6 +181,8 @@
           </div>
         </div>
 
+
+        <!--featured buyer cards-->
         <div class="users-grid" v-else>
           <div class="user-card" v-for="buyer in featuredBuyers" :key="buyer.id">
             <div class="user-avatar">
@@ -231,19 +236,23 @@
           <h2>Ready to Start Your Journey?</h2>
           <p>Join thousands of successful sellers and buyers on our platform</p>
           <div class="cta-actions">
+
             <button class="btn btn-light" @click="navigateToRegister('seller')">
               Register as Seller
             </button>
-            <button class="btn btn-dark" @click="navigateToRegister('buyer')">
+
+            <button class="btn btn-dark" @click="navigateToRegister('buyer-dashboard')">
               Register as Buyer
             </button>
+
           </div>
         </div>
       </div>
     </section>
   </div>
-</template>
 
+
+</template>
 
 
 
@@ -302,6 +311,8 @@ export default {
           color: '#00BCD4',
         },
       ],
+
+
       steps: [
         {
           title: 'Create Account',
@@ -320,6 +331,8 @@ export default {
           description: 'Make secure transactions with our protection',
         },
       ],
+
+      //catergories
       categories: [
         { id: 1, name: 'Electronics', icon: 'fas fa-laptop', count: 12500, color: '#4ECDC4' },
         { id: 2, name: 'Fashion', icon: 'fas fa-tshirt', count: 8900, color: '#FF6B6B' },
@@ -328,6 +341,8 @@ export default {
         { id: 5, name: 'Beauty', icon: 'fas fa-spa', count: 4300, color: '#118AB2' },
         { id: 6, name: 'Sports', icon: 'fas fa-football-ball', count: 3200, color: '#EF476F' },
       ],
+
+      //seller
       featuredSellers: [
         {
           id: 1,
@@ -336,16 +351,16 @@ export default {
           rating: 4.8,
           listings: 245,
           verified: true,
-          avatar: 'https://i.pravatar.cc/150?img=1',
+          avatar: new URL('@/assets/images/featured-sellers-img/img_1.png', import.meta.url).href,
         },
         {
           id: 2,
-          name: 'Ptas-Fashion',
-          category: 'Clothing',
+          name: 'ផ្ទុះប្រហុក',
+          category: 'food',
           rating: 4.9,
           listings: 189,
           verified: true,
-          avatar: 'https://i.pravatar.cc/150?img=2',
+          avatar: new URL('@/assets/images/featured-sellers-img/img.png', import.meta.url).href,
         },
         {
           id: 3,
@@ -354,7 +369,7 @@ export default {
           rating: 4.7,
           listings: 156,
           verified: true,
-          avatar: 'https://i.pravatar.cc/150?img=3',
+          avatar: new URL('@/assets/images/featured-sellers-img/img_2.png', import.meta.url).href,
         },
         {
           id: 4,
@@ -363,9 +378,11 @@ export default {
           rating: 4.6,
           listings: 98,
           verified: true,
-          avatar: 'https://i.pravatar.cc/150?img=4',
+          avatar: new URL('@/assets/images/featured-sellers-img/img_3.png', import.meta.url).href,
         },
       ],
+
+      //buyers
       featuredBuyers: [
         {
           id: 1,
@@ -373,7 +390,7 @@ export default {
           interest: 'Bulk Electronics',
           purchases: 245,
           verified: true,
-          avatar: 'https://i.pravatar.cc/150?img=5',
+          avatar: new URL('@/assets/images/featured-buyers-img/img.png', import.meta.url).href,
         },
         {
           id: 2,
@@ -381,7 +398,7 @@ export default {
           interest: 'Fashion Wholesale',
           purchases: 189,
           verified: true,
-          avatar: 'https://i.pravatar.cc/150?img=6',
+          avatar: new URL('@/assets/images/featured-buyers-img/img_1.png', import.meta.url).href,
         },
         {
           id: 3,
@@ -389,7 +406,7 @@ export default {
           interest: 'Hospitality Supplies',
           purchases: 156,
           verified: true,
-          avatar: 'https://i.pravatar.cc/150?img=7',
+          avatar: new URL('@/assets/images/featured-buyers-img/img_2.png', import.meta.url).href,
         },
         {
           id: 4,
@@ -397,16 +414,18 @@ export default {
           interest: 'Educational Materials',
           purchases: 98,
           verified: true,
-          avatar: 'https://i.pravatar.cc/150?img=8',
+          avatar: new URL('@/assets/images/featured-buyers-img/img_3.png', import.meta.url).href,
         },
       ],
+
+      //testimonials
       testimonials: [
         {
           id: 1,
           content: 'This platform revolutionized my small business. Found reliable buyers in days!',
           name: 'Ming Chantha',
           role: 'Fashion Seller',
-          avatar: 'https://i.pravatar.cc/150?img=9',
+          avatar: new URL('@/assets/images/testimonials/img.png', import.meta.url).href,
         },
         {
           id: 2,
@@ -414,37 +433,58 @@ export default {
             'As a buyer, I love the variety and quality of sellers. Saved 30% on procurement!',
           name: 'PU Johnson',
           role: 'Procurement Manager',
-          avatar: 'https://i.pravatar.cc/150?img=10',
+          avatar: new URL('@/assets/images/testimonials/img_1.png', import.meta.url).href,
         },
         {
           id: 3,
           content: 'The secure payment system gives me peace of mind for large transactions.',
           name: 'Ming Leak',
           role: 'Electronics Wholesaler',
-          avatar: 'https://i.pravatar.cc/150?img=11',
+          avatar: new URL('@/assets/images/testimonials/img_2.png', import.meta.url).href,
         },
       ],
     }
   },
   methods: {
+
     formatNumber(num) {
       if (num >= 1000) {
         return (num / 1000).toFixed(1) + 'k'
       }
       return num.toString()
     },
-    navigateToRegister(type) {
-      this.$router.push(`/register?type=${type}`)
-    },
+
+      navigateToRegister(type) {
+        switch (type) {
+          case 'buyer':
+            this.$router.push('/buyer/auth/register');
+            break;
+          case 'seller':
+            this.$router.push('/seller/auth/register');
+            break;
+          case 'buyer-dashboard':
+            this.$router.push('/buyer/dashboard');
+            break;
+          default:
+            console.warn("Navigation type not recognized:", type);
+        }
+      },
+
     browseCategory(categoryId) {
       this.$router.push(`/category/${categoryId}`)
     },
+
+
     viewSellerProfile(sellerId) {
       this.$router.push(`/seller/${sellerId}`)
     },
+
+
     viewBuyerProfile(buyerId) {
       this.$router.push(`/buyer/${buyerId}`)
     },
+
+
   },
 }
 </script>
@@ -711,8 +751,25 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   font-size: 2rem;
-  color: #ff7b00;
+  color: #ffffff;
   width: 10px;
+}
+
+.section-header-step {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.section-header-step h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ff7b00;
+  margin-bottom: 10px;
+}
+
+.section-header-step p {
+  font-size: 1.1rem;
+  color: #ff7b00;
 }
 
 /* Categories Section */
@@ -789,7 +846,7 @@ export default {
 /* Users Section */
 .users-section {
   padding: 100px 0;
-  background: linear-gradient(200deg, #ff7b00 10%, #f2f2f2 90%);
+  background: linear-gradient(345deg, #ff7b00 5%, #ffffff 70%);
 }
 
 .tabs {
@@ -961,7 +1018,6 @@ export default {
 }
 
 .testimonial-content::before {
-  content: '"';
   font-size: 4rem;
   color: #e2e8f0;
   position: absolute;
@@ -981,6 +1037,7 @@ export default {
   height: 60px;
   border-radius: 50%;
   object-fit: cover;
+  border-style: solid;
 }
 
 .testimonial-author h4 {
@@ -1034,7 +1091,6 @@ export default {
   color: white;
 }
 
-.btn-light:hover,
 .btn-dark:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
