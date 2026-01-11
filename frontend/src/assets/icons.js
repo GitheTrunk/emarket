@@ -1,3 +1,4 @@
+import { OhVueIcon } from "oh-vue-icons";
 import {
   FaMobileScreenButton,
   FaDesktop,
