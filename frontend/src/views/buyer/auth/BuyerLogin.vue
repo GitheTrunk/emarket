@@ -10,7 +10,7 @@
         class="w-full mb-3 p-3 border rounded"
         required
       />
-      
+
        <!-- Display password input with toggle visibility -->
       <div class="relative w-full mb-3">
         <input
@@ -83,7 +83,7 @@ const login = async () => {
   const user = data.user;
   const role = user.user_metadata.role;
 
-  // Debugging` 
+  // Debugging`
   console.log("Logged in as:", role);
 
   if (role === "buyer") router.push("/buyer/dashboard");
