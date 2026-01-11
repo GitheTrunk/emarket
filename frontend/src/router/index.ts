@@ -25,29 +25,41 @@ const router = createRouter({
 
 // Role Guard
 router.beforeEach(async (to, _, next) => {
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
-  const requiredRole = to.meta.role;
+  try {
+    const requiredRole = to.meta.role;
 
-  // Public routes
-  if (!to.meta.role) return next();
+    console.log("Navigating to:", to.path, "Required role:", requiredRole);
 
-  // Not logged in
-  if (!user) return next();
+    // Public routes - no authentication required
+    if (!requiredRole) return next();
 
-  if(!user) {
-    if (requiredRole === 'buyer') return next("/buyer/auth/login");
-    if (requiredRole === 'seller') return next("/seller/auth/login");
-    if (requiredRole === 'admin') return next("/admin/login");
-    return next("/");
+    // For protected routes, check authentication
+    const { data, error } = await supabase.auth.getUser();
+    const user = data?.user;
+
+    if (error || !user) {
+      // User not authenticated
+      if (requiredRole === 'buyer') return next("/buyer/auth/login");
+      if (requiredRole === 'seller') return next("/seller/auth/login");
+      if (requiredRole === 'admin') return next("/admin/login");
+      return next("/");
+    }
+
+    const userRole = user.user_metadata?.role;
+    
+    console.log("User role:", userRole, "Required role:", requiredRole);
+
+    // Check if user has required role
+    if (userRole !== requiredRole) {
+      console.warn(`Access denied: User role ${userRole} doesn't match required role ${requiredRole}`);
+      return next("/");
+    }
+
+    next();
+  } catch (error) {
+    console.error("Auth error:", error);
+    next();
   }
-
-  const role = user.user_metadata.role;
-
-  // Wrong role
-  if (role !== to.meta.role) return next("/");
-
-  next();
 });
 
 export default router;

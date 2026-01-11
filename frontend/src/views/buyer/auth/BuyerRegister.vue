@@ -18,16 +18,22 @@
           <input v-model="email" type="email" class="w-full p-3 border rounded" required />
         </div>
 
-        <!-- Password -->
-        <div class="mb-4">
+        <!-- Password and password input with toggle visibility-->
+        <div class="mb-4 relative">
           <label class="block text-gray-700">Password</label>
-          <input v-model="password" type="password" class="w-full p-3 border rounded" required />
+          <input v-model="password" :type="showPassword ? 'text' : 'password'" class="w-full p-3 border rounded pr-10" required />
+          <button type="button" @click="toggleShowPassword" class="absolute inset-y-0 right-0 flex items-center pr-3" style="top: 1.5rem;">
+            <i class="pi" :class="showPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+          </button>
         </div>
 
-        <!-- Confirm Password -->
-        <div class="mb-4">
+        <!-- Confirm Password and password input with toggle visibility-->
+        <div class="mb-4 relative">
           <label class="block text-gray-700">Confirm Password</label>
-          <input v-model="confirmPassword" type="password" class="w-full p-3 border rounded" required />
+          <input v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" class="w-full p-3 border rounded pr-10" required />
+          <button type="button" @click="toggleShowConfirmPassword" class="absolute inset-y-0 right-0 flex items-center pr-3" style="top: 1.5rem;">
+            <i class="pi" :class="showConfirmPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+          </button>
         </div>
 
         <!-- Submit Button -->
@@ -38,7 +44,7 @@
 
       <p class="mt-4 text-center text-gray-600">
         Already have an account?
-        <router-link to="/buyer/login" class="text-blue-600">Login</router-link>
+        <router-link to="/buyer/auth/login" class="text-blue-600">Login</router-link>
       </p>
     </div>
   </div>
@@ -48,6 +54,7 @@
 import { ref } from 'vue'
 import supabase from '@/lib/supabase'
 import { useRouter } from 'vue-router'
+import 'primeicons/primeicons.css'
 
 const router = useRouter()
 
@@ -56,13 +63,26 @@ const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 
+// Display password input with toggle visibility
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+
+const toggleShowPassword = () => {
+  showPassword.value = !showPassword.value
+}
+
+const toggleShowConfirmPassword = () => {
+  showConfirmPassword.value = !showConfirmPassword.value
+}
+
+
 const registerUser = async () => {
   if (password.value !== confirmPassword.value) {
     alert("Passwords do not match!")
     return
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: email.value,
     password: password.value,
     options: {
@@ -79,6 +99,6 @@ const registerUser = async () => {
   }
 
   alert("Account created! Check your email to verify.")
-  router.push('/buyer/login')
+  router.push('/buyer/auth/login')
 }
 </script>

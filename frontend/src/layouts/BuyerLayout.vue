@@ -10,13 +10,15 @@
 
       <!-- Page Content -->
       <main class="p-6">
-        <slot />
+        <router-view />
       </main>
 
+      <Footer />
     </div>
   </div>
 </template>
 
 <script setup>
+import Footer from "@/components/common/Footer.vue";
 import BuyerNavbar from "@/components/layout/BuyerNavbar.vue";
 </script>

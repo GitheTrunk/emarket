@@ -2,16 +2,7 @@ import type { RouteRecordRaw } from "vue-router";
 import SellerLayout from "@/layouts/SellerLayout.vue";
 
 const sellerRoutes: RouteRecordRaw[] = [
-  {
-    path: "/seller/auth/login",
-    name: "SellerLogin",
-    component: () => import('@/views/seller/auth/SellerLogin.vue') ,
-  },
-  {
-    path: "/seller/auth/register",
-    name: "SellerRegister",
-    component: () => import('@/views/seller/auth/SellerRegister.vue') ,
-  },
+
   {
     path: "/seller",
     component: SellerLayout,
@@ -21,6 +12,21 @@ const sellerRoutes: RouteRecordRaw[] = [
         path: "dashboard",
         name: "SellerDashboard",
         component: () => import("@/views/seller/SellerDashboard.vue"),
+      },
+      {
+        path: "products",
+        name: "SellerProducts",
+        component: () => import("@/views/seller/SellerProducts.vue"),
+      },
+      {
+        path: "orders",
+        name: "SellerOrders",
+        component: () => import("@/views/seller/SellerOrders.vue"),
+      },
+      {
+        path: "analytics",
+        name: "SellerAnalytics",
+        component: () => import("@/views/seller/SellerAnalytics.vue"),
       },
     ],
   },

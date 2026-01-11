@@ -1,40 +1,15 @@
 <template>
-  <div class="min-h-screen flex bg-gray-100">
+  <div class="min-h-screen bg-gray-50 text-gray-800">
+    <div class="flex min-h-screen">
+      <SellerSidebar />
 
-    <!-- Seller Sidebar -->
-    <aside class="w-64 bg-purple-700 text-white h-screen sticky top-0">
-      <div class="p-6 text-xl font-bold border-b border-purple-500">
-        Seller Panel
-      </div>
-
-      <nav class="p-4 space-y-2">
-        <router-link to="/seller/dashboard" class="block p-2 rounded hover:bg-purple-600">Dashboard</router-link>
-        <router-link to="/seller/products" class="block p-2 rounded hover:bg-purple-600">Products</router-link>
-        <router-link to="/seller/orders" class="block p-2 rounded hover:bg-purple-600">Orders</router-link>
-        <router-link to="/seller/analytics" class="block p-2 rounded hover:bg-purple-600">Analytics</router-link>
-
-        <button @click="logout" class="block p-2 rounded bg-red-500 mt-4 w-full">
-          Logout
-        </button>
-      </nav>
-    </aside>
-
-    <!-- Content -->
-    <div class="flex-1 flex flex-col">
-
-      <!-- Seller Navbar -->
-      <SellerNavbar />
-
-      <main class="p-6">
-        <slot />
+      <main class="flex-1 overflow-y-auto p-6">
+        <router-view />
       </main>
     </div>
-
   </div>
 </template>
 
 <script setup>
-import SellerNavbar from "@/components/layout/SellerNavbar.vue";
-
-const logout = () => alert("Seller logged out");
+import SellerSidebar from '@/components/layout/SellerSidebar.vue'
 </script>
