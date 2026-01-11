@@ -7,10 +7,10 @@
 
     <!-- Menu -->
     <nav class="menu">
-      <a href="#" >Home</a>
-      <a href="@/views/AboutUPage.vue">About us</a>
-      <a href="#">Blogs</a>
-      <a href="#">Contact us</a>
+      <router-link to="/">Home</router-link>
+      <router-link to="/about">About Us</router-link>
+      <router-link to="/blog">Blogs</router-link>
+      <router-link to="/contact-us">Contact us</router-link>
     </nav>
 
     <div class="search-box">
