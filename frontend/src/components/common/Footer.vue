@@ -48,25 +48,25 @@
         <p class="footer-text-small">HELP SUPPORT US, WE ARE BROKE.</p>
 
         <div class="qr-section">
-          <img src="@/assets/footer/qr-code.png" class="qr" alt="QR">
+          <img src="@/assets/images/qr-code.png" class="qr" alt="QR">
           <div class="app-buttons">
-            <img src="@/assets/footer/google-play.png" class="app-btn" alt="Google Play">
-            <img src="@/assets/footer/app-store.png" class="app-btn" alt="App Store">
+            <img src="@/assets/images/google-play.png" class="app-btn" alt="Google Play">
+            <img src="@/assets/images/app-store.png" class="app-btn" alt="App Store">
           </div>
         </div>
 
         <div class="social">
           <span>
-            <img src="@/assets/footer/facebook-icon.png" class="fb-icon" alt="Facebook Icon">
+            <img src="@/assets/images/facebook-icon.png" class="fb-icon" alt="Facebook Icon">
           </span>
           <span>
-            <img src="@/assets/footer/twitter-icon.png" class="twit-icon" alt="Twitter Icon">
+            <img src="@/assets/images/twitter-icon.png" class="twit-icon" alt="Twitter Icon">
           </span>
           <span>
-            <img src="@/assets/footer/instagram-icon.png" class="ig-icon" alt="Instagram Icon">
+            <img src="@/assets/images/instagram-icon.png" class="ig-icon" alt="Instagram Icon">
           </span>
           <span>
-            <img src="@/assets/footer/linkin-icon.png" class="li-icon" alt="LinkedInIcon">
+            <img src="@/assets/images/linkin-icon.png" class="li-icon" alt="LinkedInIcon">
           </span>
         </div>
       </div>

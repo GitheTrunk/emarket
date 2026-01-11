@@ -10,7 +10,7 @@
         class="w-full mb-3 p-3 border rounded"
         required
       />
-      
+
        <!-- Display password input with toggle visibility -->
       <div class="relative w-full mb-3">
         <input
@@ -83,7 +83,7 @@ const login = async () => {
   const user = data.user;
   const role = user.user_metadata.role;
 
-  // Debugging` 
+  // Debugging`
   console.log("Logged in as:", role);
 
   if (role === "buyer") router.push("/buyer/dashboard");
@@ -92,3 +92,96 @@ const login = async () => {
   else alert("Unknown role. Contact admin.");
 };
 </script>
+
+<style scoped>
+.login-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100vh;
+  background-color: #fff;
+}
+
+.login-box {
+  background: #FF7B00;
+  color: #fff;
+  padding: 40px;
+  width: 50%;
+  height: 650px;
+  border-radius: 50px 0 0 50px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.login-box h2 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-bottom: 1px solid #fff;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+}
+
+.input-group input::placeholder {
+  color: #fff;
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  margin-bottom: 20px;
+}
+
+.options .forgot {
+  color: #eee;
+  text-decoration: underline;
+}
+
+.login-btn, .google-btn {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.login-btn {
+  background-color: #fff;
+  color: #e58c3a;
+}
+
+.google-btn {
+  background-color: transparent;
+  border: 1px solid #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  gap: 10px;
+}
+
+.signup-text {
+  text-align: center;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.signup-text a {
+  color: #fff;
+  text-decoration: underline;
+}
+</style>
+
