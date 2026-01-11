@@ -7,8 +7,8 @@
     <nav class="menu">
       <router-link to="/">Home</router-link>
       <router-link to="/about">About us</router-link>
-      <a href="/blog">Blogs</a>
-      <a href="/contact-us">Contact us</a>
+      <router-link to="/blog">Blogs</router-link>
+      <router-link to="/contact-us">Contact us</router-link>
     </nav>
 
     <div class="search-box">

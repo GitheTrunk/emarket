@@ -151,6 +151,7 @@ export default {
   margin: 0 auto;
   padding: 0 20px;
 }
+
 .blog-page {
   font-family: 'Inter', sans-serif;
   background-color: #f8fafc;
