@@ -1,20 +1,35 @@
 <template>
   <header class="navbar">
+    <!-- Logo -->
     <div class="logo">
       <img src="@/assets/logo/img.png" alt="E-Market" />
     </div>
 
+    <!-- Menu -->
     <nav class="menu">
       <router-link to="/">Home</router-link>
-      <router-link to="/about">About us</router-link>
+      <router-link to="/about">About Us</router-link>
       <router-link to="/blog">Blogs</router-link>
       <router-link to="/contact-us">Contact us</router-link>
     </nav>
 
     <div class="search-box">
-      <input type="text" placeholder="What are you looking for?" />
+      <span>
+        <input type="text" placeholder="What are you looking for?" />
+      </span>
     </div>
 
+    <div class="icons">
+      <span>
+        <img class="pi pi-heart">
+      </span>
+      <span>
+        <img class="pi pi-shopping-cart">
+      </span>
+      <span>
+        <img class="pi pi-user">
+      </span>
+    </div>
   </header>
 </template>
 
