@@ -6,6 +6,7 @@ export type Product = {
   price: number
   category: string
   stock: number
+  status: 'active' | 'draft' | 'paused' | 'out_of_stock'
   images: string[]
   location_lat: number | null
   location_lng: number | null
