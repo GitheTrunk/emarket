@@ -63,7 +63,7 @@
                     </span>
                   </div>
                   <button
-                    @click="removeFromCart(item.id)"
+                    @click="removeFromCart(String(item.id))"
                     class="p-1 text-gray-400 hover:text-red-500 transition-colors"
                     title="Remove from cart"
                   >
@@ -87,7 +87,7 @@
                 <!-- Quantity Controls -->
                 <div class="flex items-center gap-2">
                   <button
-                    @click="updateQuantity(item.id, item.quantity - 1)"
+                    @click="updateQuantity(String(item.id), item.quantity - 1)"
                     :disabled="item.quantity <= 1"
                     class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
@@ -97,7 +97,7 @@
                   </button>
                   <span class="w-12 text-center font-medium">{{ item.quantity }}</span>
                   <button
-                    @click="updateQuantity(item.id, item.quantity + 1)"
+                    @click="updateQuantity(String(item.id), item.quantity + 1)"
                     :disabled="item.quantity >= item.product.stock"
                     class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
@@ -195,7 +195,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getCart, updateCartItemQuantity, removeFromCart as removeCartItem } from '@/services/cartService'
+import { getCart, removeFromCart as removeCartItem, updateCartItem } from '@/services/cartService'
 import type { CartItem } from '@/types/database'
 
 const router = useRouter()
@@ -223,25 +223,26 @@ const loadCart = async () => {
   }
 }
 
-const updateQuantity = async (cartItemId: number, newQuantity: number) => {
+const updateQuantity = async (cartItemId: string, newQuantity: number) => {
   if (newQuantity < 1) return
 
   try {
-    await updateCartItemQuantity(cartItemId, newQuantity)
-    const item = cartItems.value.find(i => i.id === cartItemId)
+    await updateCartItem(cartItemId, newQuantity)
+    const item = cartItems.value.find(i => i.id === Number(cartItemId))
     if (item) {
       item.quantity = newQuantity
     }
+    showToast('Quantity updated', 'success')
   } catch (error) {
     showToast('Failed to update quantity', 'error')
     console.error('Error updating quantity:', error)
   }
 }
 
-const removeFromCart = async (cartItemId: number) => {
+const removeFromCart = async (cartItemId: string) => {
   try {
     await removeCartItem(cartItemId)
-    cartItems.value = cartItems.value.filter(item => item.id !== cartItemId)
+    cartItems.value = cartItems.value.filter(item => item.id !== Number(cartItemId))
     showToast('Item removed from cart', 'success')
   } catch (error) {
     showToast('Failed to remove item', 'error')

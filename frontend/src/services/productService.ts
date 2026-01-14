@@ -1,33 +1,22 @@
-import { supabase } from '../lib/supabase'
-import type { Product } from '../types/database'
+import type { CreateProductInput } from '../types/database'
+import { api } from './api'
 
-type CreateProductInput = {
-  title: string
-  description: string
-  price: number
-  category: string
-  stock: number
-  images: string[]
-  location_lat?: number | null
-  location_lng?: number | null
+export const createProduct = async (input: CreateProductInput) => {
+  return await api.post('/products', input)
 }
 
-export const createProduct = async (
-  input: CreateProductInput
-): Promise<void> => {
-  const {
-    data: { user },
-    error: authError
-  } = await supabase.auth.getUser()
+export const getProducts = async () => {
+  return await api.get('/products')
+}
 
-  if (authError || !user) {
-    throw new Error('User not authenticated')
-  }
+export const getProductById = async (id: string) => {
+  return await api.get(`/products/${id}`)
+}
 
-  const { error } = await supabase.from('products').insert({
-    seller_id: user.id,
-    ...input
-  })
+export const updateProduct = async (id: string, updates: any) => {
+  return await api.put(`/products/${id}`, updates)
+}
 
-  if (error) throw error
+export const deleteProductById = async (id: string) => {
+  return await api.delete(`/products/${id}`)
 }

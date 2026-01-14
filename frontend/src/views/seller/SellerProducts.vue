@@ -23,7 +23,7 @@
 					<select v-model="filters.status" class="mt-1 w-full rounded border border-gray-200 px-3 py-2 text-sm">
 						<option value="all">All</option>
 						<option value="active">Active</option>
-						<option value="draft">Draft</option>
+						<option value="paused">Paused</option>
 						<option value="out_of_stock">Out of stock</option>
 					</select>
 				</div>
@@ -74,8 +74,14 @@
 							<td class="px-4 py-3 text-gray-500">{{ formatDate(item.updatedAt) }}</td>
 							<td class="px-4 py-3">
 								<div class="flex justify-end gap-2">
-									<button class="rounded-md border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100" @click="toggleStatus(item)">
-										{{ item.status === 'active' ? 'Pause' : 'Activate' }}
+									<button class="rounded-md border border-blue-200 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50" @click="editProduct(item.id)">
+										Edit
+									</button>
+									<button class="rounded-md border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100" @click="pause(item.id)">
+										Pause
+									</button>
+									<button v-if="statusLabel(item.status) == 'Paused'" class="rounded-md border border-green-200 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-100" @click="unPause(item.id)">
+										Unpause
 									</button>
 									<button class="rounded-md border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50" @click="remove(item.id)">
 										Remove
@@ -94,6 +100,8 @@
 				</table>
 			</div>
 		</div>
+
+		<EditProductModal :show="showEditModal" :product="selectedProductForEdit" @close="showEditModal = false" @save="saveProduct" />
 	</div>
 </template>
 
@@ -102,16 +110,19 @@ import { computed, reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import supabase from '@/lib/supabase'
 import type { Product as ProductRow } from '@/types/database'
+import EditProductModal from '@/components/ui/EditProductModal.vue'
 
-type ProductStatus = 'active' | 'draft' | 'out_of_stock'
+type ProductStatus = 'active' | 'draft' | 'out_of_stock' | 'paused'
 
 type Product = {
 	id: string
 	title: string
+	description?: string
 	category: string
 	price: number
 	stock: number
 	status: ProductStatus
+	images: string[]
 	updatedAt: string
 }
 
@@ -169,15 +180,25 @@ async function fetchProducts() {
 
 		if (error) throw error
 
-		const mapped: Product[] = (data || []).map((row: ProductRow) => ({
-			id: String(row.id),
-			title: row.title,
-			category: row.category,
-			price: row.price,
-			stock: row.stock,
-			status: row.stock > 0 ? 'active' : 'out_of_stock',
-			updatedAt: row.created_at
-		}))
+		const mapped: Product[] = (data || []).map((row: ProductRow) => {
+			// Auto-set out_of_stock if stock is 0 and not paused
+			let productStatus = row.status
+			if (row.stock === 0 && row.status !== 'paused') {
+				productStatus = 'out_of_stock'
+			}
+			
+			return {
+				id: String(row.id),
+				title: row.title,
+				description: row.description,
+				category: row.category,
+				price: row.price,
+				stock: row.stock,
+				status: productStatus,
+				images: row.images || [],
+				updatedAt: row.created_at
+			}
+		})
 
 		products.value = mapped
 	} catch (err) {
@@ -193,12 +214,16 @@ onMounted(fetchProducts)
 function statusLabel(status: ProductStatus) {
 	if (status === 'active') return 'Active'
 	if (status === 'draft') return 'Draft'
-	return 'Out of stock'
+	if (status === 'paused') return 'Paused'
+	if (status === 'out_of_stock') return 'Out of Stock'
+	return 'Unknown'
 }
 
 function statusClasses(status: ProductStatus) {
 	if (status === 'active') return 'bg-green-100 text-green-700'
 	if (status === 'draft') return 'bg-blue-100 text-blue-700'
+	if (status === 'paused') return 'bg-gray-100 text-gray-700'
+	if (status === 'out_of_stock') return 'bg-red-100 text-red-700'
 	return 'bg-orange-100 text-orange-700'
 }
 
@@ -210,27 +235,13 @@ function formatDate(value: string) {
 	}).format(new Date(value))
 }
 
-function toggleStatus(item: Product) {
-	if (item.status === 'active') {
-		item.status = 'draft'
-		return
-	}
-
-	if (item.stock <= 0) {
-		item.status = 'out_of_stock'
-		return
-	}
-
-	item.status = 'active'
-}
-
 function remove(id: string) {
 	const proceed = confirm('Remove this product?')
 	if (!proceed) return
 
 	const doRemove = async () => {
 		try {
-			const { error } = await supabase.from('products').delete().eq('id', Number(id))
+			const { error } = await supabase.from('products').delete().eq('id', id)
 			if (error) throw error
 			products.value = products.value.filter((p) => p.id !== id)
 		} catch (err) {
@@ -240,6 +251,93 @@ function remove(id: string) {
 	}
 
 	doRemove()
+}
+
+const showEditModal = ref(false)
+const selectedProductId = ref<string | null>(null)
+
+const selectedProductForEdit = computed(() => {
+	if (!selectedProductId.value) return null
+	return products.value.find(p => p.id === selectedProductId.value) || null
+})
+
+function editProduct(id: string) {
+	selectedProductId.value = id
+	showEditModal.value = true
+}
+
+async function saveProduct(data: { title: string; description: string; price: number; stock: number; category: string; status: string }) {
+	if (!selectedProductId.value) return
+
+	try {
+		const { error } = await supabase
+			.from('products')
+			.update({
+				title: data.title,
+				description: data.description,
+				price: data.price,
+				stock: data.stock,
+				category: data.category,
+				status: data.status
+			})
+			.eq('id', selectedProductId.value)
+
+		if (error) {
+			console.error('Supabase error:', error)
+			throw error
+		}
+
+		// Refresh the products list to get updated data
+		await fetchProducts()
+
+		showEditModal.value = false
+		selectedProductId.value = null
+	} catch (err) {
+		console.error('Failed to update product', err)
+		alert(`Failed to update product: ${err instanceof Error ? err.message : 'Unknown error'}`)
+	}
+}
+
+function pause(id: string) {
+    const proceed = confirm('Pause this product?')
+    if (!proceed) return
+
+    const doPause = async () => {
+        try {
+            const { error } = await supabase.from('products').update({ status: 'paused' }).eq('id', id)
+            if (error) throw error
+            const product = products.value.find((p) => p.id === id)
+            if (product) product.status = 'paused'
+
+        } catch (err) {
+            console.error('Failed to pause product', err)
+            alert('Failed to pause product')
+            
+        }
+    }
+
+    doPause()
+}
+
+function unPause(id: string) {
+	const proceed = confirm('Unpause this product?')
+	if (!proceed) return
+
+	const doUnPause = async () => {
+		try {
+			const { error } = await supabase.from('products').update({ status: 'active' }).eq('id', id)
+			if (error) throw error
+			const product = products.value.find((p) => p.id === id)
+			if (product) product.status = 'active'
+
+		} catch (err) {
+			console.error('Failed to unpause product', err)
+			alert('Failed to unpause product')
+			
+		}
+	}
+
+	doUnPause()
 }
 
 function refresh() {

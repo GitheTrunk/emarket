@@ -187,7 +187,7 @@ const loadWishlist = async () => {
 
 const removeFromWishlist = async (id: number) => {
   try {
-    await removeWishlistItem(id)
+    await removeWishlistItem(id.toString())
     wishlistItems.value = wishlistItems.value.filter(item => item.id !== id)
     showToast('Removed from wishlist', 'success')
   } catch (error) {

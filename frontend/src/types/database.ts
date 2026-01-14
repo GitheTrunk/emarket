@@ -6,6 +6,7 @@ export type Product = {
   price: number
   category: string
   stock: number
+  status: 'active' | 'draft' | 'paused' | 'out_of_stock'
   images: string[]
   location_lat: number | null
   location_lng: number | null
@@ -41,4 +42,15 @@ export type CartItem = {
   quantity: number
   created_at: string
   product: Product
+}
+
+export type CreateProductInput = {
+  title: string
+  description: string
+  price: number
+  category: string
+  stock: number
+  images: string[]
+  location_lat?: number | null
+  location_lng?: number | null
 }
