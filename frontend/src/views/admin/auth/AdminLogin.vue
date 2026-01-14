@@ -34,7 +34,7 @@
       </button>
       <p class="mt-3 text-right text-gray-400">
         <router-link to="/forgot-password" class="hover:underline">Forgot Password?</router-link>
-      </p>
+      </p>=
     </form>
   </div>
 </template>
