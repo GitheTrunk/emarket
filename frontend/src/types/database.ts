@@ -54,3 +54,4 @@ export type CreateProductInput = {
   location_lat?: number | null
   location_lng?: number | null
 }
+

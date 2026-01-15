@@ -10,7 +10,20 @@
         </div>
 
         <!-- KPI Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div v-for="n in 4" :key="n" class="bg-white border rounded-xl p-4 shadow-sm animate-pulse">
+                <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                <div class="h-8 bg-gray-200 rounded mb-2"></div>
+                <div class="h-3 bg-gray-200 rounded"></div>
+            </div>
+        </div>
+        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-xl p-4">
+            <p class="text-red-600">{{ error }}</p>
+            <button @click="fetchDashboardData" class="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                Retry
+            </button>
+        </div>
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex items-center justify-between">
                     <div>
@@ -157,6 +170,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import { Chart, registerables } from 'chart.js';
+import { api } from '../../services/api'
 
 Chart.register(...registerables);
 
@@ -167,52 +181,55 @@ const categoryChartRef = ref<HTMLCanvasElement | null>(null);
 let salesChart: Chart | null = null;
 let categoryChart: Chart | null = null;
 
-// Mock data - Replace with actual database queries later
+// Reactive data from database
 const stats = ref({
-    totalSales: 23480,
-    salesGrowth: 8,
-    activeUsers: 1238,
-    usersGrowth: 2,
-    totalOrders: 146,
-    pendingOrders: 18,
-    revenueGrowth: 12.5
+    totalSales: 0,
+    salesGrowth: 0,
+    activeUsers: 0,
+    usersGrowth: 0,
+    totalOrders: 0,
+    pendingOrders: 0,
+    revenueGrowth: 0
 });
 
-const recentOrders = ref([
-    { id: '#12345', customer: 'John Doe', amount: 240.00, status: 'Completed' },
-    { id: '#12346', customer: 'Jane Smith', amount: 85.20, status: 'Pending' },
-    { id: '#12347', customer: 'Mike Johnson', amount: 156.80, status: 'Processing' },
-    { id: '#12348', customer: 'Sarah Williams', amount: 320.50, status: 'Completed' },
-    { id: '#12349', customer: 'Tom Brown', amount: 95.00, status: 'Cancelled' }
-]);
+interface OrderData {
+  id: string
+  customer: string
+  amount: number
+  status: string
+}
 
-const topProducts = ref([
-    { name: 'Wireless Headphones', sales: 245, revenue: 12250 },
-    { name: 'Smart Watch', sales: 189, revenue: 37800 },
-    { name: 'Laptop Stand', sales: 156, revenue: 4680 },
-    { name: 'USB-C Cable', sales: 423, revenue: 8460 }
-]);
+interface ProductData {
+  name: string
+  sales: number
+  revenue: number
+}
 
-// Sales trend data - Replace with database query
-const salesData = {
+const recentOrders = ref<OrderData[]>([]);
+const topProducts = ref<ProductData[]>([]);
+const loading = ref(true);
+const error = ref('');
+
+// Sales trend data
+const salesData = ref({
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
         {
             label: 'Sales',
-            data: [3200, 4100, 3800, 5200, 4900, 6100, 5800],
+            data: [0, 0, 0, 0, 0, 0, 0],
             borderColor: '#3b82f6',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
             tension: 0.4,
             fill: true
         }
     ]
-};
+});
 
-// Category distribution data - Replace with database query
-const categoryData = {
+// Category distribution data
+const categoryData = ref({
     labels: ['Electronics', 'Fashion', 'Home & Garden', 'Sports', 'Books'],
     datasets: [{
-        data: [35, 25, 20, 12, 8],
+        data: [0, 0, 0, 0, 0],
         backgroundColor: [
             '#3b82f6',
             '#10b981',
@@ -221,7 +238,7 @@ const categoryData = {
             '#8b5cf6'
         ]
     }]
-};
+});
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -240,12 +257,85 @@ const getStatusClass = (status: string) => {
     return classes[status as keyof typeof classes] || 'bg-gray-100 text-gray-700';
 };
 
+const fetchDashboardData = async () => {
+    loading.value = true;
+    error.value = '';
+
+    try {
+        // Fetch comprehensive stats from backend
+        const statsResponse = await api.get('/admin/stats');
+        
+        // Update KPI stats with real data
+        stats.value = {
+            totalSales: statsResponse.orders.totalRevenue || 0,
+            salesGrowth: statsResponse.growth?.sales || 0,
+            activeUsers: statsResponse.users.total || 0,
+            usersGrowth: statsResponse.growth?.users || 0,
+            totalOrders: statsResponse.orders.total || 0,
+            pendingOrders: statsResponse.orders.pending || 0,
+            revenueGrowth: statsResponse.growth?.revenue || 0
+        };
+
+        // Fetch recent transactions
+        const transactionsResponse = await api.get('/admin/transactions');
+        recentOrders.value = transactionsResponse.slice(0, 5).map((txn: any) => ({
+            id: txn.id,
+            customer: txn.buyer?.full_name || 'Unknown',
+            amount: txn.amount,
+            status: txn.status.charAt(0).toUpperCase() + txn.status.slice(1)
+        }));
+
+        // Use real top products from backend
+        topProducts.value = statsResponse.topProducts || [];
+
+        // Update chart data with real values
+        updateCharts(statsResponse);
+
+    } catch (err: any) {
+        console.error('Error fetching dashboard data:', err);
+        error.value = err.message || 'Failed to load dashboard data';
+    } finally {
+        loading.value = false;
+    }
+};
+
+const updateCharts = (statsResponse: any) => {
+    // Update sales trend with real data
+    if (salesData.value.datasets[0] && statsResponse.salesTrend) {
+        const labels = statsResponse.salesTrend.map((d: any) => {
+            const date = new Date(d.date)
+            return date.toLocaleDateString('en-US', { weekday: 'short' })
+        })
+        const data = statsResponse.salesTrend.map((d: any) => d.sales)
+        
+        salesData.value.labels = labels
+        salesData.value.datasets[0].data = data
+    }
+
+    // Update category distribution with real data
+    if (categoryData.value.datasets[0] && statsResponse.categoryDistribution) {
+        const categories = statsResponse.categoryDistribution.slice(0, 5)
+        categoryData.value.labels = categories.map((c: any) => c.name)
+        categoryData.value.datasets[0].data = categories.map((c: any) => c.count)
+    }
+
+    initCharts();
+};
+
 const initCharts = () => {
+    // Destroy existing charts
+    if (salesChart) {
+        salesChart.destroy();
+    }
+    if (categoryChart) {
+        categoryChart.destroy();
+    }
+
     // Sales Chart
     if (salesChartRef.value) {
         salesChart = new Chart(salesChartRef.value, {
             type: 'line',
-            data: salesData,
+            data: salesData.value,
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
@@ -275,7 +365,7 @@ const initCharts = () => {
     if (categoryChartRef.value) {
         categoryChart = new Chart(categoryChartRef.value, {
             type: 'doughnut',
-            data: categoryData,
+            data: categoryData.value,
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
@@ -289,26 +379,13 @@ const initCharts = () => {
     }
 };
 
-// TODO: Replace with actual database queries
-// const fetchDashboardData = async () => {
-//     const { data, error } = await supabase
-//         .from('orders')
-//         .select('*')
-//         .order('created_at', { ascending: false })
-//         .limit(5);
-//     
-//     if (data) {
-//         recentOrders.value = data;
-//     }
-// };
-
 onMounted(() => {
-    initCharts();
-    // fetchDashboardData();
+    fetchDashboardData();
 });
 
 watch(timeRange, () => {
     // TODO: Fetch data based on selected time range
     console.log('Time range changed to:', timeRange.value);
+    fetchDashboardData();
 });
 </script>
