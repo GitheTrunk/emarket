@@ -25,9 +25,11 @@ export const authenticateToken = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const token = req.headers.authorization?.split(' ')[1]
+    const authHeader = req.headers.authorization
+    const token = authHeader?.split(' ')[1]
 
     if (!token) {
+      console.log('[Auth] No token provided for', req.path)
       res.status(401).json({ error: 'No token provided' })
       return
     }
@@ -36,6 +38,7 @@ export const authenticateToken = async (
     const { data, error } = await supabase.auth.getUser(token)
 
     if (error || !data.user) {
+      console.log('[Auth] Invalid token for', req.path, error?.message)
       res.status(401).json({ error: 'Invalid token' })
       return
     }
@@ -49,7 +52,8 @@ export const authenticateToken = async (
 
     next()
   } catch (error) {
-    res.status(500).json({ error: 'Authentication failed' })
+    console.error('[Auth] Authentication error:', error)
+    res.status(401).json({ error: 'Authentication failed' })
   }
 }
 

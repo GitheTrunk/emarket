@@ -59,12 +59,12 @@
             <!-- Dropdown Menu -->
             <div class="absolute right-0 mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
               <router-link 
-                to="/buyer/profile" 
+                to="/account/profile" 
                 class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-t-lg transition-colors"
               >
-                My Profile
+                My Account
               </router-link>
-              <router-link 
+              <!-- <router-link 
                 to="/buyer/orders" 
                 class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
               >
@@ -75,7 +75,7 @@
                 class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
               >
                 Settings
-              </router-link>
+              </router-link> -->
               <button 
                 @click="logout"
                 class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 rounded-b-lg transition-colors border-t border-gray-100"

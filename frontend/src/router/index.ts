@@ -8,12 +8,14 @@ import publicRoutes from "@/router/modules/public";
 import buyerRoutes from "@/router/modules/buyer";
 import sellerRoutes from "@/router/modules/seller";
 import adminRoutes from "@/router/modules/admin";
+import accountRoutes from "@/router/modules/account";
 
 const routes: RouteRecordRaw[] = [
   ...publicRoutes,
   ...buyerRoutes,
   ...sellerRoutes,
   ...adminRoutes,
+  ...accountRoutes,
 
   { path: "/:catchAll(.*)", redirect: '/' },
 ];

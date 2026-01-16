@@ -55,3 +55,52 @@ export type CreateProductInput = {
   location_lng?: number | null
 }
 
+export type UpdateProductInput = Partial<{
+  title: string
+  description: string
+  price: number
+  category: string
+  stock: number
+  images: string[]
+}>
+
+export type Address = {
+  id: number
+  buyer_id: string
+  label: string
+  recipient_name: string
+  street: string
+  city: string
+  state: string
+  postal_code: string
+  country: string
+  phone_number: string
+  is_default: boolean
+  created_at: string
+}
+
+export type CreateAddressInput = {
+  label: string
+  recipient_name: string
+  street: string
+  city: string
+  state: string
+  postal_code: string
+  country: string
+  phone_number: string
+  is_default?: boolean
+}
+
+export type UpdateAddressInput = Partial<{
+  label: string
+  recipient_name: string
+  street: string
+  city: string
+  state: string
+  postal_code: string
+  country: string
+  phone_number: string
+  is_default: boolean
+}> 
+
+

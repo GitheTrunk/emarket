@@ -17,6 +17,8 @@ const apiCall = async (method: string, endpoint: string, body?: any) => {
 
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+    } else {
+        console.warn('[API] No token available for', method, endpoint)
     }
 
     const options: RequestInit = {
@@ -28,11 +30,22 @@ const apiCall = async (method: string, endpoint: string, body?: any) => {
         options.body = JSON.stringify(body);
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+    const url = `${API_BASE_URL}${endpoint}`
+    const apiDebug = (import.meta.env.VITE_API_DEBUG || 'false').toString().toLowerCase() === 'true'
+    if (apiDebug) console.log(`[API] ${method} ${url}`)
+    
+    const response = await fetch(url, options);
 
     if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'API request failed');
+        let errorMessage = `API request failed with status ${response.status}`
+        try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage
+        } catch (e) {
+            // Response is not JSON
+        }
+        if (apiDebug) console.error(`[API] ${method} ${endpoint}:`, errorMessage)
+        throw new Error(errorMessage);
     }
 
     return response.json();
