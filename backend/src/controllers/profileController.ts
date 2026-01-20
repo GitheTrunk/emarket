@@ -22,7 +22,7 @@ export const getProfile = async (
       return
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('id', req.user.id)
@@ -48,7 +48,11 @@ export const getProfile = async (
       return
     }
 
-    res.json(data[0])
+    // Add email to response since it's stored in auth, not profiles table
+    res.json({
+      ...data[0],           // Profile data from table
+      email: req.user.email // Email from auth system
+    })
   } catch (error) {
     console.error('Error in getProfile:', error)
     res.status(500).json({ error: 'Internal server error' })
@@ -88,16 +92,14 @@ export const updateProfile = async (
       // Create new profile
       console.log('[updateProfile] Creating new profile for user:', req.user.id)
       
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('profiles')
         .insert({
           id: req.user.id,
           full_name: full_name || '',
           phone: phone || '',
           date_of_birth: date_of_birth || null,
-          avatar_url: avatar_url || '',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          avatar_url: avatar_url || ''
         })
         .select()
 
@@ -113,9 +115,7 @@ export const updateProfile = async (
     }
 
     // Update existing profile - only update fields that are provided
-    const updateData: any = {
-      updated_at: new Date().toISOString()
-    }
+    const updateData: any = {}
 
     if (full_name !== undefined) updateData.full_name = full_name
     if (phone !== undefined) updateData.phone = phone
@@ -124,7 +124,7 @@ export const updateProfile = async (
 
     console.log('[updateProfile] Updating profile:', updateData)
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('profiles')
       .update(updateData)
       .eq('id', req.user.id)
