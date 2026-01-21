@@ -52,6 +52,7 @@ const links: NavLink[] = [
   { name: 'SellerProducts', label: 'Product', to: '/seller/products', icon: 'pi pi-box' },
   { name: 'SellerOrders', label: 'Order', to: '/seller/orders', icon: 'pi pi-shopping-bag' },
   { name: 'SellerAnalytics', label: 'Analytics', to: '/seller/analytics', icon: 'pi pi-chart-line' },
+  { name: 'SellerProfile', label: 'Profile', to: '/seller/profile', icon: 'pi pi-user' },
 ]
 
 function isActive(path: string) {

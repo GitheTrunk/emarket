@@ -12,6 +12,10 @@
 			</div>
 		</div>
 
+		<div v-if="showCreate" class="mt-4">
+			<CreateProductForm @created="onCreated" @close="showCreate = false" />
+		</div>
+
 		<div class="bg-white rounded shadow border border-gray-200 p-4 space-y-4">
 			<div class="grid gap-3 md:grid-cols-3">
 				<div>
@@ -111,6 +115,7 @@ import { useRouter } from 'vue-router'
 import supabase from '@/lib/supabase'
 import type { Product as ProductRow } from '@/types/database'
 import EditProductModal from '@/components/ui/EditProductModal.vue'
+import CreateProductForm from '@/components/seller/CreateProductForm.vue'
 
 type ProductStatus = 'active' | 'draft' | 'out_of_stock' | 'paused'
 
@@ -130,6 +135,7 @@ const router = useRouter()
 const loading = ref(false)
 const errorMessage = ref('')
 const products = ref<Product[]>([])
+const showCreate = ref(false)
 
 const filters = reactive({
 	search: '',
@@ -345,6 +351,13 @@ function refresh() {
 }
 
 function goToCreate() {
-	router.push({ name: 'SellerDashboard' })
+	// show the create product form inline/modal
+	showCreate.value = true
+}
+
+async function onCreated() {
+	// refresh list and close form
+	await fetchProducts()
+	showCreate.value = false
 }
 </script>
