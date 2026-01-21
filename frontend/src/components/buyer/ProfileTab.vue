@@ -239,13 +239,13 @@ const handleAvatarUpload = async (event: Event) => {
 
   try {
     isSaving.value = true
-    
+
     // Upload to Supabase Storage and get public URL
     const avatarUrl = await uploadAvatarImage(file)
-    
+
     const newProfileData = { ...props.profileData, avatar_url: avatarUrl }
     emit('update:profileData', newProfileData)
-    
+
     emit('notify', { message: 'Profile picture updated successfully! Click "Save Changes" to keep it.', type: 'success' })
     isEditing.value = true
   } catch (error) {

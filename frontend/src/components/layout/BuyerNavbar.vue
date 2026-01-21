@@ -58,31 +58,34 @@
             
             <!-- Dropdown Menu -->
             <div class="absolute right-0 mt-0 w-48 bg-white rounded-lg shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-              <router-link 
-                to="/account/profile" 
+
+              <!--USER PROFILE-->
+              <router-link
+                to="/account/profile"
                 class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-t-lg transition-colors"
               >
                 My Account
               </router-link>
-              <!-- <router-link 
+
+              <!--USER ORDERS-->
+              <router-link
                 to="/buyer/orders" 
                 class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
               >
                 My Orders
               </router-link>
-              <router-link 
-                to="/buyer/settings" 
-                class="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
-              >
-                Settings
-              </router-link> -->
+
+
+              <!--LOGOUT-->
               <button 
                 @click="logout"
                 class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 rounded-b-lg transition-colors border-t border-gray-100"
               >
                 Logout
               </button>
+
             </div>
+
           </div>
 
           <!-- Mobile Menu Toggle -->
@@ -138,8 +141,8 @@ onMounted(() => {
 
 const logout = async () => {
   // TODO: Implement logout logic
-  alert("Logout functionality coming soon");
-  // router.push('/');
+  alert("Loging out!!");
+  router.push('/home');
 };
 </script>
 
