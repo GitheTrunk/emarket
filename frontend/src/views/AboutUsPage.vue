@@ -158,31 +158,31 @@ export default {
 
         {
           name: 'Keo Siengheng',
-          role: 'Chief Technology Officer',
-          githublink: 'https://github.com/GitheTrunk',
-          linkedinlink: 'https://github.com/GitheTrunk',
+          role: 'Admin System developer',
+          githublink: 'https://github.com/SiengHeng',
+          linkedinlink: 'https://github.com/SiengHeng',
           image: new URL('@/assets/team/img_1.png', import.meta.url).href
         },
 
         {
           name: 'Chi Savmoeng',
           role: 'Developer',
-          githublink: 'https://github.com/GitheTrunk',
-          linkedinlink: 'https://github.com/GitheTrunk',
+          githublink: 'https://github.com/MI-jerng',
+          linkedinlink: 'https://github.com/MI-jerng',
           image: new URL('@/assets/team/img_4.png', import.meta.url).href
         },
 
         {
           name: 'Sok Sana',
-          role: 'Developer',
-          githublink: 'https://github.com/GitheTrunk',
-          linkedinlink: 'https://github.com/GitheTrunk',
+          role: 'Seller system Developer',
+          githublink: 'https://github.com/sanaSOK',
+          linkedinlink: 'https://github.com/sanaSOK',
           image: new URL('@/assets/team/img_3.png', import.meta.url).href
         },
 
         {
           name: 'Sreng Sopheakanha',
-          role: 'Frontend Developer',
+          role: 'Buyer system Developer',
           githublink: 'https://github.com/ROXYTINA',
           linkedinlink: 'https://github.com/ROXYTINA',
           image: new URL('@/assets/team/img_2.png', import.meta.url).href

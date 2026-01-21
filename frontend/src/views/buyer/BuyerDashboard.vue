@@ -205,7 +205,8 @@
               </div>
             </div>
 
-            <!-- Product Details -->
+
+            <!-- Product Display -->
             <div>
               <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded mb-3">
                 {{ selectedProduct.category }}
@@ -262,6 +263,7 @@
                 </button>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -275,6 +277,7 @@ import supabase from '@/lib/supabase'
 import type { Product } from '@/types/database'
 import { addToWishlist, removeProductFromWishlist, isInWishlist as checkWishlist } from '@/services/wishlistService'
 import { addToCart as addProductToCart } from '@/services/cartService'
+import router from "@/router";
 
 const products = ref<Product[]>([])
 const loading = ref(true)
@@ -390,7 +393,7 @@ const addToCart = async (product: Product) => {
 const buyNow = (product: Product) => {
   // TODO: Implement checkout flow
   alert(`Proceeding to checkout for "${product.title}"`)
-  console.log('Buy now:', product)
+  router.push('/buyer/checkout')
 }
 
 const isInWishlist = (productId: string): boolean => {
@@ -415,24 +418,38 @@ const toggleWishlist = async (productId: string) => {
 }
 
 const loadWishlistStatus = async () => {
-  // Load wishlist status for all products
-  const productIds = products.value.map(p => p.id)
-  const wishlistSet = new Set<string>()
-  
-  for (const productId of productIds) {
-    const inWishlist = await checkWishlist(productId)
-    if (inWishlist) {
-      wishlistSet.add(productId)
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    // Fetch all product IDs from the wishlist table for this user in ONE go
+    const { data, error } = await supabase
+        .from('wishlist')
+        .select('product_id')
+        .eq('user_id', user.id)
+
+    if (error) throw error
+
+    // Create a new Set from the results
+    if (data) {
+      wishlistProductIds.value = new Set(data.map(item => item.product_id))
     }
+  } catch (err) {
+    console.error('Error loading wishlist from database:', err)
   }
-  
-  wishlistProductIds.value = wishlistSet
 }
 
 onMounted(async () => {
   await fetchProducts()
+  // Now we load from the database so the red hearts persist
   await loadWishlistStatus()
 })
+onMounted(async () => {
+  await fetchProducts()
+  await loadWishlistStatus()
+})
+
+
 </script>
 
 <style scoped>

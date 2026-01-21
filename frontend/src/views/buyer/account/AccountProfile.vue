@@ -43,7 +43,7 @@ onMounted(async () => {
   try {
     // Fetch profile from backend API
     const profile = await api.get('/profile')
-    
+
     const data = {
       full_name: profile.full_name || '',
       email: profile.email || '',
@@ -55,7 +55,7 @@ onMounted(async () => {
     originalProfileData.value = { ...data }
   } catch (error: any) {
     console.error('Error loading profile:', error.message)
-    
+
     // If it's a 401, user is not authenticated
     if (error.message.includes('401')) {
       if (notify) {
