@@ -81,13 +81,25 @@ const password = ref('')
 const confirmPassword = ref('')
 const shopAddress = ref('')
 
+// Display password input with toggle visibility functionality
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+
+const toggleShowPassword = () => {
+  showPassword.value = !showPassword.value
+}
+
+const toggleShowConfirmPassword = () => {
+  showConfirmPassword.value = !showConfirmPassword.value
+}
+
 const registerUser = async () => {
   if (password.value !== confirmPassword.value) {
     alert("Passwords do not match!")
     return
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: email.value,
     password: password.value,
     options: {

@@ -53,12 +53,19 @@ import supabase from "@/lib/supabase";
 import { useRouter } from "vue-router";
 import Divider from "@/components/ui/Divider.vue";
 import "primeicons/primeicons.css";
-import logo from '../../../assets/logo/E-Market.png'
+import logo from '../../../assets/logo/login.png'
 
 const router = useRouter();
 
 const email = ref("");
 const password = ref("");
+
+// Display password input with toggle visibility funtionality
+const showPassword = ref(false);
+
+const toggleShowPassword = () => {
+  showPassword.value = !showPassword.value;
+};
 
 const login = async () => {
   const { data, error } = await supabase.auth.signInWithPassword({
