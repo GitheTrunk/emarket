@@ -1,86 +1,73 @@
 <template>
-  <div class="max-w-4xl mx-auto p-6">
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">Seller Profile</h1>
+        <p class="text-sm text-gray-500">Manage your store information and contact details.</p>
+      </div>
+    </div>
 
-      <div class="h-40 bg-gradient-to-r from-indigo-500 to-purple-600 relative">
-        <div class="absolute -bottom-12 left-8">
-          <div class="w-24 h-24 rounded-2xl bg-white border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
-            <img v-if="shop.logo" :src="shop.logo" class="w-full h-full object-cover" />
-            <span v-else class="text-3xl font-bold text-indigo-600">{{ shop.name?.charAt(0) }}</span>
-          </div>
+    <div class="bg-white rounded shadow border border-gray-200 p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="col-span-1 flex flex-col items-center gap-4">
+        <div class="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border">
+          <img v-if="profile.avatarUrl" :src="profile.avatarUrl" class="w-full h-full object-cover" />
+          <div v-else class="w-full h-full flex items-center justify-center text-gray-400">No avatar</div>
+        </div>
+
+        <div class="w-full text-center">
+          <p class="text-sm text-gray-500">Store</p>
+          <p class="font-semibold text-lg">{{ profile.storeName || 'Your Store' }}</p>
+        </div>
+
+        <div class="w-full text-center">
+          <p class="text-xs text-gray-500">Products</p>
+          <p class="font-medium text-xl">{{ productsCount }}</p>
+        </div>
+
+        <div class="w-full">
+          <label class="block text-xs text-gray-500 mb-1">Change avatar</label>
+          <input ref="avatarInput" type="file" accept="image/*" class="hidden" @change="onAvatarChange" />
+          <button @click="openAvatar" class="w-full rounded bg-gray-100 py-2 text-sm">Upload avatar</button>
         </div>
       </div>
 
-      <div class="pt-16 p-8">
-        <div class="flex justify-between items-start mb-8">
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900">{{ shop.name || 'Untitled Shop' }}</h1>
-            <p class="text-gray-500 text-sm">Seller ID: {{ sellerId }}</p>
-          </div>
-          <button
-              @click="isEditing = !isEditing"
-              class="px-5 py-2 rounded-lg border border-gray-300 font-semibold hover:bg-gray-50 transition"
-          >
-            {{ isEditing ? 'Cancel' : 'Edit Shop Profile' }}
-          </button>
-        </div>
-
-        <div class="grid grid-cols-3 gap-4 mb-10">
-          <div class="bg-gray-50 p-4 rounded-xl text-center">
-            <p class="text-xl font-bold text-gray-900">4.9</p>
-            <p class="text-xs text-gray-500 uppercase">Rating</p>
-          </div>
-          <div class="bg-gray-50 p-4 rounded-xl text-center">
-            <p class="text-xl font-bold text-gray-900">124</p>
-            <p class="text-xs text-gray-500 uppercase">Products</p>
-          </div>
-          <div class="bg-gray-50 p-4 rounded-xl text-center">
-            <p class="text-xl font-bold text-gray-900">2 yrs</p>
-            <p class="text-xs text-gray-500 uppercase">On Market</p>
-          </div>
-        </div>
-
-        <form @submit.prevent="saveProfile" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="col-span-2">
+        <form @submit.prevent="saveProfile" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-bold text-gray-700 mb-1">Shop Name</label>
-              <input
-                  v-model="shop.name"
-                  :disabled="!isEditing"
-                  type="text"
-                  class="w-full border border-gray-300 rounded-lg p-3 disabled:bg-gray-50 disabled:text-gray-500 outline-none focus:ring-2 focus:ring-indigo-500"
-              />
+              <label class="block text-xs text-gray-500">Full name</label>
+              <input v-model="profile.fullName" class="mt-1 w-full rounded border border-gray-200 px-3 py-2" />
             </div>
             <div>
-              <label class="block text-sm font-bold text-gray-700 mb-1">Business Email</label>
-              <input
-                  v-model="shop.email"
-                  :disabled="!isEditing"
-                  type="email"
-                  class="w-full border border-gray-300 rounded-lg p-3 disabled:bg-gray-50 disabled:text-gray-500"
-              />
+              <label class="block text-xs text-gray-500">Store name</label>
+              <input v-model="profile.storeName" class="mt-1 w-full rounded border border-gray-200 px-3 py-2" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-gray-500">Email</label>
+              <input v-model="profile.email" type="email" class="mt-1 w-full rounded border border-gray-200 px-3 py-2" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500">Phone</label>
+              <input v-model="profile.phone" class="mt-1 w-full rounded border border-gray-200 px-3 py-2" />
             </div>
           </div>
 
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">Shop Description</label>
-            <textarea
-                v-model="shop.description"
-                :disabled="!isEditing"
-                rows="4"
-                class="w-full border border-gray-300 rounded-lg p-3 disabled:bg-gray-50 disabled:text-gray-500"
-                placeholder="Tell customers what you specialize in..."
-            ></textarea>
+            <label class="block text-xs text-gray-500">Store description</label>
+            <textarea v-model="profile.bio" rows="4" class="mt-1 w-full rounded border border-gray-200 px-3 py-2"></textarea>
           </div>
 
-          <div v-if="isEditing" class="flex justify-end pt-4">
-            <button
-                type="submit"
-                :disabled="loading"
-                class="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-100"
-            >
-              {{ loading ? 'Saving...' : 'Save Changes' }}
-            </button>
+          <div>
+            <label class="block text-xs text-gray-500">Location / Address</label>
+            <input v-model="profile.address" class="mt-1 w-full rounded border border-gray-200 px-3 py-2" placeholder="Street, City, Country" />
+          </div>
+
+          <div class="flex gap-3 justify-end pt-2">
+            <button type="button" @click="loadProfile" class="px-4 py-2 rounded border">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded bg-orange-500 text-white">Save changes</button>
           </div>
         </form>
       </div>
@@ -89,59 +76,130 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import supabase from '@/lib/supabase'
+import { uploadAvatarImage } from '@/services/storageService'
 
-const isEditing = ref(false)
-const loading = ref(false)
-const sellerId = ref('')
+const avatarInput = ref<HTMLInputElement | null>(null)
 
-const shop = reactive({
-  name: '',
-  description: '',
+const profile = reactive({
+  id: '',
   email: '',
-  logo: null
+  fullName: '',
+  storeName: '',
+  phone: '',
+  bio: '',
+  address: '',
+  avatarUrl: ''
 })
 
-async function fetchShopProfile() {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (user) {
-    sellerId.value = user.id
-    // Assuming you have a 'profiles' or 'shops' table
-    const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+const productsCount = ref(0)
+const loading = ref(false)
 
-    if (data && !error) {
-      shop.name = data.full_name || ''
-      shop.description = data.description || ''
-      shop.email = user.email || ''
-    }
-  }
+function openAvatar() {
+  avatarInput.value?.click()
 }
 
-async function saveProfile() {
-  loading.value = true
+async function onAvatarChange(e: Event) {
+  const t = e.target as HTMLInputElement
+  if (!t.files || !t.files[0]) return
   try {
-    const { error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: shop.name,
-          description: shop.description
-        })
-        .eq('id', sellerId.value)
+    loading.value = true
+    const url = await uploadAvatarImage(t.files[0])
+    profile.avatarUrl = url
 
-    if (error) throw error
-    alert('Profile updated!')
-    isEditing.value = false
-  } catch (err: any) {
-    alert(err.message)
+    // update user metadata immediately
+    // Supabase stores metadata directly under `data`; avoid nesting under user_metadata
+    await supabase.auth.updateUser({ data: { ...getUserMetadata(), avatar_url: url } })
+    alert('Avatar uploaded')
+  } catch (err) {
+    console.error(err)
+    alert('Failed to upload avatar')
   } finally {
     loading.value = false
   }
 }
 
-onMounted(fetchShopProfile)
+function getUserMetadata() {
+  return {
+    fullName: profile.fullName,
+    storeName: profile.storeName,
+    phone: profile.phone,
+    bio: profile.bio,
+    address: profile.address,
+    avatar_url: profile.avatarUrl,
+    role: 'seller'
+  }
+}
+
+async function loadProfile() {
+  try {
+    loading.value = true
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    profile.id = user.id
+    profile.email = user.email || ''
+    const md = (user.user_metadata || {}) as any
+    const meta = (md.user_metadata || md) as any
+    profile.fullName = meta.fullName || meta.full_name || ''
+    profile.storeName = meta.storeName || meta.store_name || ''
+    profile.phone = meta.phone || ''
+    profile.bio = meta.bio || ''
+    profile.address = meta.address || ''
+    profile.avatarUrl = meta.avatar_url || ''
+
+    // count products
+    const { count, error } = await supabase.from('products').select('id', { count: 'exact', head: true }).eq('seller_id', user.id)
+    if (!error) productsCount.value = count || 0
+  } catch (err) {
+    console.error('Load profile failed', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+async function saveProfile() {
+  try {
+    loading.value = true
+    const metadata = getUserMetadata()
+    // include email if it changed
+    const { data: { user } } = await supabase.auth.getUser()
+    const updatePayload: any = { data: metadata }
+    if (profile.email && profile.email !== (user?.email || '')) updatePayload.email = profile.email
+
+    const { error } = await supabase.auth.updateUser(updatePayload)
+    if (error) throw error
+    // Also persist into `profiles` table so admin and other services can read structured data
+    try {
+      const { data, error: upsertErr } = await supabase.from('profiles').upsert({
+        id: profile.id,
+        full_name: metadata.fullName,
+        store_name: metadata.storeName,
+        phone: metadata.phone,
+        bio: metadata.bio,
+        address: metadata.address,
+        avatar_url: metadata.avatar_url,
+        role: 'seller'
+      })
+      if (upsertErr) throw upsertErr
+    } catch (dbErr: any) {
+      console.error('Failed to upsert profile row:', dbErr)
+      // Non-fatal: notify user but don't fail entirely since auth update succeeded
+      alert('Profile updated, but failed to save to profile table: ' + (dbErr?.message || String(dbErr)))
+      return
+    }
+
+    // reload to pick up any server-side changes (email, metadata)
+    await loadProfile()
+    alert('Profile updated')
+  } catch (err: any) {
+    console.error('Save failed', err)
+    const msg = err?.message || (err && JSON.stringify(err)) || 'Unknown error'
+    alert('Failed to save profile: ' + msg)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadProfile)
 </script>
