@@ -109,7 +109,8 @@ async function onAvatarChange(e: Event) {
     profile.avatarUrl = url
 
     // update user metadata immediately
-    await supabase.auth.updateUser({ data: { user_metadata: { ...getUserMetadata(), avatar_url: url } } })
+    // Supabase stores metadata directly under `data`; avoid nesting under user_metadata
+    await supabase.auth.updateUser({ data: { ...getUserMetadata(), avatar_url: url } })
     alert('Avatar uploaded')
   } catch (err) {
     console.error(err)
@@ -139,12 +140,13 @@ async function loadProfile() {
     profile.id = user.id
     profile.email = user.email || ''
     const md = (user.user_metadata || {}) as any
-    profile.fullName = md.fullName || md.full_name || ''
-    profile.storeName = md.storeName || md.store_name || ''
-    profile.phone = md.phone || ''
-    profile.bio = md.bio || ''
-    profile.address = md.address || ''
-    profile.avatarUrl = md.avatar_url || ''
+    const meta = (md.user_metadata || md) as any
+    profile.fullName = meta.fullName || meta.full_name || ''
+    profile.storeName = meta.storeName || meta.store_name || ''
+    profile.phone = meta.phone || ''
+    profile.bio = meta.bio || ''
+    profile.address = meta.address || ''
+    profile.avatarUrl = meta.avatar_url || ''
 
     // count products
     const { count, error } = await supabase.from('products').select('id', { count: 'exact', head: true }).eq('seller_id', user.id)
@@ -162,7 +164,7 @@ async function saveProfile() {
     const metadata = getUserMetadata()
     // include email if it changed
     const { data: { user } } = await supabase.auth.getUser()
-    const updatePayload: any = { data: { user_metadata: metadata } }
+    const updatePayload: any = { data: metadata }
     if (profile.email && profile.email !== (user?.email || '')) updatePayload.email = profile.email
 
     const { error } = await supabase.auth.updateUser(updatePayload)
@@ -180,7 +182,7 @@ async function saveProfile() {
         role: 'seller'
       })
       if (upsertErr) throw upsertErr
-    } catch (dbErr) {
+    } catch (dbErr: any) {
       console.error('Failed to upsert profile row:', dbErr)
       // Non-fatal: notify user but don't fail entirely since auth update succeeded
       alert('Profile updated, but failed to save to profile table: ' + (dbErr?.message || String(dbErr)))
