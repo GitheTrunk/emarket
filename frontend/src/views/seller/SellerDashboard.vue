@@ -99,6 +99,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, onUnmounted, watch, nextTick } from 'vue'
 import supabase from '@/lib/supabase'
+import { api } from '@/services/api'
 import {
   Chart,
   LineElement,
@@ -152,7 +153,7 @@ async function fetchDashboard() {
       .eq('seller_id', user.id)
 
     if (!ordersErr && orders) {
-      // apply optional date filters from calendar
+      // apply optional date filters from calendar (for chart rendering)
       let filteredOrders = orders
       if (startDate.value) {
         const sd = new Date(startDate.value)
@@ -164,54 +165,31 @@ async function fetchDashboard() {
         filteredOrders = filteredOrders.filter((o: any) => new Date(o.created_at) <= ed)
       }
 
-      totalOrders.value = filteredOrders.length
-      totalRevenue.value = filteredOrders.reduce((s: number, o: any) => s + (Number(o.amount) || 0), 0)
-      productsSold.value = filteredOrders.reduce((s: number, o: any) => s + (Number(o.quantity) || 0), 0)
-
-      // new customers in last 30 days
-      const cutoff = new Date()
-      cutoff.setDate(cutoff.getDate() - 30)
-      const recentBuyers = filteredOrders.filter((o: any) => new Date(o.created_at) >= cutoff).map((o: any) => o.buyer_id)
-      newCustomers.value = Array.from(new Set(recentBuyers)).length
-
-      // aggregate top products by orders
-      const map = new Map<string, { sold: number; revenue: number }>()
-      for (const o of filteredOrders) {
-        if (!o.product_id) continue
-        const prev = map.get(o.product_id) || { sold: 0, revenue: 0 }
-        prev.sold += Number(o.quantity) || 0
-        prev.revenue += Number(o.amount) || 0
-        map.set(o.product_id, prev)
-      }
-
-      // fetch product titles
-      const productIds = Array.from(map.keys())
-      let productsData: any[] = []
-      if (productIds.length) {
-        const { data: pd } = await supabase.from('products').select('id,title,price').in('id', productIds)
-        productsData = pd || []
-      }
-
-      // fetch cart counts to include checkout intent/popularity
-      const cartCounts: Record<string, number> = {}
-      if (productIds.length) {
-        const { data: carts } = await supabase.from('cart').select('product_id,quantity').in('product_id', productIds)
-        for (const c of carts || []) {
-          const pid = String(c.product_id)
-          cartCounts[pid] = (cartCounts[pid] || 0) + (Number(c.quantity) || 0)
+      // fetch server-calculated totals and top products (scoped by selected range)
+      try {
+        let endpoint = '/seller/stats'
+        if (startDate.value && endDate.value) {
+          endpoint += `?start=${encodeURIComponent(startDate.value)}&end=${encodeURIComponent(endDate.value)}`
+        } else {
+          const days = Number(range.value) || 7
+          endpoint += `?days=${days}`
         }
+
+        const stats = await api.get(endpoint)
+        totalOrders.value = stats.totalOrders || 0
+        totalRevenue.value = stats.totalRevenue || 0
+        productsSold.value = stats.productsSold || 0
+        newCustomers.value = stats.newCustomers || 0
+        if (Array.isArray(stats.topProducts)) {
+          topProducts.value = stats.topProducts.map((p: any) => ({ id: p.id, title: p.title || p.name || 'Unknown', sold: p.sold || p.sales || 0, revenue: p.revenue || 0 })).slice(0, 4)
+        } else {
+          topProducts.value = []
+        }
+      } catch (err) {
+        console.warn('Could not fetch seller stats from API', err)
       }
-
-      const list = Array.from(map.entries()).map(([id, v]) => {
-        const prod = productsData.find(p => String(p.id) === String(id)) || { title: 'Unknown', price: 0 }
-        const cartCount = cartCounts[id] || 0
-        return { id, title: prod.title || prod.name || 'Unknown', sold: v.sold, revenue: v.revenue, cartCount }
-      })
-
-      // sort by combined popularity: sold + cartCount
-      topProducts.value = list.sort((a, b) => (b.sold + (b.cartCount || 0)) - (a.sold + (a.cartCount || 0))).slice(0, 4)
       
-      // if you have a chart component it can be re-rendered here using filteredOrders
+      // render chart using the filtered orders
       ordersCache.value = filteredOrders
       await nextTick()
       renderSalesChart(filteredOrders)
