@@ -1,11 +1,16 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+
     <!-- Search and Filter Bar -->
     <div class="bg-white shadow-sm border-b border-gray-200 p-4 mb-6">
+
       <div class="max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row gap-4">
+
           <!-- Search Bar -->
           <div class="flex-1">
+
+            <!---search input-->
             <div class="relative">
               <input
                 id="product-search"
@@ -20,6 +25,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
+
           </div>
 
           <!-- Category Filter -->
@@ -50,12 +56,18 @@
               <option value="price-high">Price: High to Low</option>
             </select>
           </div>
+
         </div>
+
       </div>
+
     </div>
+
+
 
     <!-- Products Grid -->
     <div class="max-w-7xl mx-auto px-4">
+
       <!-- Loading State -->
       <div v-if="loading" class="flex justify-center items-center py-20">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -67,6 +79,7 @@
         <button @click="fetchProducts" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
           Retry
         </button>
+
       </div>
 
       <!-- Empty State -->
@@ -78,6 +91,8 @@
         <p class="text-gray-500">Try adjusting your search or filters</p>
       </div>
 
+
+
       <!-- Products Grid -->
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 pb-8">
         <div
@@ -86,6 +101,7 @@
           class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer"
           @click="viewProduct(product)"
         >
+
           <!-- Product Image -->
           <div class="relative h-48 bg-gray-100">
             <img
@@ -94,12 +110,15 @@
               :alt="product.title"
               class="w-full h-full object-cover"
             />
+
             <div v-else class="flex items-center justify-center h-full">
               <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
+
             </div>
-            
+
+
             <!-- Stock Badge -->
             <div class="absolute top-2 right-2">
               <span
@@ -113,6 +132,7 @@
               </span>
             </div>
 
+
             <!-- Wishlist Button -->
             <button
               @click.stop="toggleWishlist(product.id)"
@@ -123,10 +143,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </button>
+
           </div>
+
+
 
           <!-- Product Info -->
           <div class="p-4">
+
             <!-- Category Badge -->
             <div class="mb-2">
               <span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
@@ -159,10 +183,16 @@
                 </svg>
               </button>
             </div>
+
+
           </div>
+
         </div>
+
       </div>
     </div>
+
+
 
     <!-- Product Detail Modal -->
     <div
@@ -172,6 +202,7 @@
     >
       <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div class="p-6">
+
           <!-- Close Button -->
           <div class="flex justify-between items-start mb-4">
             <h2 class="text-2xl font-bold text-gray-900">Product Details</h2>
@@ -183,8 +214,10 @@
           </div>
 
           <div class="grid md:grid-cols-2 gap-6">
+
             <!-- Image Gallery -->
             <div>
+
               <div class="bg-gray-100 rounded-lg overflow-hidden mb-4">
                 <img
                   :src="currentImage"
@@ -192,6 +225,8 @@
                   class="w-full h-96 object-cover"
                 />
               </div>
+
+
               <!-- Thumbnails -->
               <div v-if="selectedProduct.images.length > 1" class="flex gap-2 overflow-x-auto">
                 <img
@@ -203,29 +238,32 @@
                   :class="currentImage === img ? 'border-blue-600' : 'border-gray-300'"
                 />
               </div>
+
             </div>
 
 
-            <!-- Product Display -->
+            <!-- Product Display card -->
             <div>
+
               <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded mb-3">
                 {{ selectedProduct.category }}
               </span>
-              
               <h3 class="text-2xl font-bold text-gray-900 mb-4">{{ selectedProduct.title }}</h3>
-              
               <p class="text-3xl font-bold text-blue-600 mb-4">${{ selectedProduct.price.toFixed(2) }}</p>
               
               <div class="mb-4">
+
                 <span
                   v-if="selectedProduct.stock > 0"
                   class="inline-block px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded"
                 >
                   {{ selectedProduct.stock }} in stock
                 </span>
+
                 <span v-else class="inline-block px-3 py-1 bg-red-100 text-red-800 text-sm font-medium rounded">
                   Out of Stock
                 </span>
+
               </div>
 
               <div class="mb-6">
@@ -233,6 +271,7 @@
                 <p class="text-gray-600 whitespace-pre-line">{{ selectedProduct.description }}</p>
               </div>
 
+              <!--add to wishlist button-->
               <div class="flex gap-3">
                 <button
                   @click="toggleWishlist(selectedProduct.id)"
@@ -245,8 +284,11 @@
                   {{ isInWishlist(selectedProduct.id) ? 'In Wishlist' : 'Add to Wishlist' }}
                 </button>
               </div>
-              
+
+
               <div class="flex gap-3 mt-3">
+
+                <!--Add to cart button-->
                 <button
                   @click="addToCart(selectedProduct)"
                   :disabled="selectedProduct.stock === 0"
@@ -254,6 +296,8 @@
                 >
                   Add to Cart
                 </button>
+
+                <!--go to check out-->
                 <button
                   @click="buyNow(selectedProduct)"
                   :disabled="selectedProduct.stock === 0"
@@ -261,23 +305,32 @@
                 >
                   Buy Now
                 </button>
+
+
               </div>
             </div>
+
 
           </div>
         </div>
       </div>
     </div>
   </div>
+
+
 </template>
 
+
+
 <script setup lang="ts">
+
 import { ref, computed, onMounted } from 'vue'
 import supabase from '@/lib/supabase'
 import type { Product } from '@/types/database'
 import { addToWishlist, removeProductFromWishlist, isInWishlist as checkWishlist } from '@/services/wishlistService'
 import { addToCart as addProductToCart } from '@/services/cartService'
 import router from "@/router";
+
 
 const products = ref<Product[]>([])
 const loading = ref(true)
@@ -291,30 +344,31 @@ const wishlistProductIds = ref<Set<string>>(new Set())
 
 const categories = ref<string[]>(['Electronics', 'Clothing', 'Home & Living', 'Books', 'Other'])
 
+
 // Fetch products from database
 const fetchProducts = async () => {
   try {
     loading.value = true
     error.value = ''
 
-    const { data, error: fetchError, status } = await supabase
-      .from('products')
-      .select('*')
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-
-    console.log('[BuyerDashboard] fetch products', { status, fetchError, data })
+    const { data, error: fetchError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('status', 'active')
+        .gt('stock', 0) // <--- ADD THIS: Only fetch where stock is Greater Than 0
+        .order('created_at', { ascending: false })
 
     if (fetchError) throw fetchError
 
     products.value = data || []
   } catch (err) {
     console.error('Error fetching products:', err)
-    error.value = `Failed to load products. ${err instanceof Error ? err.message : ''}`.trim()
+    error.value = `Failed to load products.`
   } finally {
     loading.value = false
   }
 }
+
 
 // Filter and sort products
 const filteredProducts = computed(() => {
@@ -348,6 +402,7 @@ const filteredProducts = computed(() => {
   return result
 })
 
+
 const onSearch = () => {
   // Trigger reactive computation
 }
@@ -360,46 +415,58 @@ const sortProducts = () => {
   // Trigger reactive computation
 }
 
+
 const truncate = (text: string, max = 80) => {
   if (!text) return ''
   return text.length > max ? `${text.slice(0, max).trimEnd()}...` : text
 }
 
+//display product
 const viewProduct = (product: Product) => {
   selectedProduct.value = product
   currentImage.value = product.images && product.images.length > 0 ? product.images[0] || '' : ''
 }
+
 
 const closeModal = () => {
   selectedProduct.value = null
   currentImage.value = ''
 }
 
+
+//data to cart tables
 const addToCart = async (product: Product) => {
   try {
+
+    //if product out of stock
     if (product.stock === 0) {
       alert('This product is out of stock')
       return
     }
-    
+
     await addProductToCart(product.id, 1)
     alert(`"${product.title}" added to cart!`)
+
   } catch (err) {
     console.error('Error adding to cart:', err)
     alert(err instanceof Error ? err.message : 'Failed to add to cart')
   }
 }
 
+
+//buy now
 const buyNow = (product: Product) => {
   // TODO: Implement checkout flow
   alert(`Proceeding to checkout for "${product.title}"`)
   router.push('/buyer/checkout')
 }
 
+//product in wishlist
 const isInWishlist = (productId: string): boolean => {
   return wishlistProductIds.value.has(productId)
 }
 
+//toggle wishlist
 const toggleWishlist = async (productId: string) => {
   try {
     if (isInWishlist(productId)) {
@@ -417,6 +484,8 @@ const toggleWishlist = async (productId: string) => {
   }
 }
 
+
+//load to wishlist table
 const loadWishlistStatus = async () => {
   try {
     const { data: { user } } = await supabase.auth.getUser()
@@ -439,6 +508,7 @@ const loadWishlistStatus = async () => {
   }
 }
 
+
 onMounted(async () => {
   await fetchProducts()
   // Now we load from the database so the red hearts persist
@@ -451,6 +521,8 @@ onMounted(async () => {
 
 
 </script>
+
+
 
 <style scoped>
 .line-clamp-2 {
