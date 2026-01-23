@@ -76,8 +76,8 @@ export const updateProfile = async (
 
     console.log('[updateProfile] User:', req.user.id, 'Data:', { full_name, phone, date_of_birth, avatar_url: avatar_url ? 'present' : 'empty' })
 
-    // Check if profile exists
-    const { data: existingProfile, error: checkError } = await supabase
+    // Check if profile exists (use admin client to bypass RLS)
+    const { data: existingProfile, error: checkError } = await supabaseAdmin
       .from('profiles')
       .select('id')
       .eq('id', req.user.id)
@@ -164,8 +164,8 @@ export const uploadAvatar = async (
       return
     }
 
-    // Update profile with avatar
-    const { data, error } = await supabase
+    // Update profile with avatar (admin client bypasses RLS)
+    const { data, error } = await supabaseAdmin
       .from('profiles')
       .update({
         avatar_url,
