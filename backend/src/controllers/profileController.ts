@@ -22,7 +22,7 @@ export const getProfile = async (
       return
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('id', req.user.id)
@@ -48,7 +48,11 @@ export const getProfile = async (
       return
     }
 
-    res.json(data[0])
+    // Add email to response since it's stored in auth, not profiles table
+    res.json({
+      ...data[0],           // Profile data from table
+      email: req.user.email // Email from auth system
+    })
   } catch (error) {
     console.error('Error in getProfile:', error)
     res.status(500).json({ error: 'Internal server error' })
@@ -72,8 +76,8 @@ export const updateProfile = async (
 
     console.log('[updateProfile] User:', req.user.id, 'Data:', { full_name, phone, date_of_birth, avatar_url: avatar_url ? 'present' : 'empty' })
 
-    // Check if profile exists
-    const { data: existingProfile, error: checkError } = await supabase
+    // Check if profile exists (use admin client to bypass RLS)
+    const { data: existingProfile, error: checkError } = await supabaseAdmin
       .from('profiles')
       .select('id')
       .eq('id', req.user.id)
@@ -88,16 +92,14 @@ export const updateProfile = async (
       // Create new profile
       console.log('[updateProfile] Creating new profile for user:', req.user.id)
       
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('profiles')
         .insert({
           id: req.user.id,
           full_name: full_name || '',
           phone: phone || '',
           date_of_birth: date_of_birth || null,
-          avatar_url: avatar_url || '',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          avatar_url: avatar_url || ''
         })
         .select()
 
@@ -113,9 +115,7 @@ export const updateProfile = async (
     }
 
     // Update existing profile - only update fields that are provided
-    const updateData: any = {
-      updated_at: new Date().toISOString()
-    }
+    const updateData: any = {}
 
     if (full_name !== undefined) updateData.full_name = full_name
     if (phone !== undefined) updateData.phone = phone
@@ -124,7 +124,7 @@ export const updateProfile = async (
 
     console.log('[updateProfile] Updating profile:', updateData)
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('profiles')
       .update(updateData)
       .eq('id', req.user.id)
@@ -164,8 +164,8 @@ export const uploadAvatar = async (
       return
     }
 
-    // Update profile with avatar
-    const { data, error } = await supabase
+    // Update profile with avatar (admin client bypasses RLS)
+    const { data, error } = await supabaseAdmin
       .from('profiles')
       .update({
         avatar_url,

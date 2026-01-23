@@ -241,7 +241,7 @@
               Register as Seller
             </button>
 
-            <button class="btn btn-dark" @click="navigateToRegister('buyer-dashboard')">
+            <button class="btn btn-dark" @click="navigateToRegister('buyer')">
               Register as Buyer
             </button>
 
@@ -431,14 +431,14 @@ export default {
           id: 2,
           content:
               'As a buyer, I love the variety and quality of sellers. Saved 30% on procurement!',
-          name: 'PU Johnson',
+          name: 'Oun Leak',
           role: 'Procurement Manager',
           avatar: new URL('@/assets/testimonials/img_1.png', import.meta.url).href,
         },
         {
           id: 3,
           content: 'The secure payment system gives me peace of mind for large transactions.',
-          name: 'Ming Leak',
+          name: 'Sopheak Electronics',
           role: 'Electronics Wholesaler',
           avatar: new URL('@/assets/testimonials/img_2.png', import.meta.url).href,
         },
@@ -461,9 +461,6 @@ export default {
           break;
         case 'seller':
           this.$router.push('/seller/auth/register');
-          break;
-        case 'buyer-dashboard':
-          this.$router.push('/buyer/dashboard');
           break;
         default:
           console.warn("Navigation type not recognized:", type);

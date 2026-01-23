@@ -73,7 +73,7 @@
                   </button>
                 </div>
                 <p class="text-sm text-gray-600 line-clamp-2 mb-2">{{ item.product.description }}</p>
-                
+
                 <!-- Stock Status -->
                 <div v-if="item.product.stock < item.quantity" class="text-sm text-red-600 font-medium mb-2">
                   Only {{ item.product.stock }} available in stock
@@ -121,17 +121,19 @@
         <div class="lg:col-span-1">
           <div class="bg-white rounded-lg shadow-md p-6 sticky top-6">
             <h2 class="text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
-            
+
             <div class="space-y-3 mb-4 pb-4 border-b border-gray-200">
               <div class="flex justify-between text-gray-600">
                 <span>Subtotal ({{ totalItems }} items)</span>
                 <span>${{ subtotal.toFixed(2) }}</span>
               </div>
+
               <div class="flex justify-between text-gray-600">
                 <span>Shipping</span>
                 <span v-if="subtotal >= 50">Free</span>
                 <span v-else>${{ shipping.toFixed(2) }}</span>
               </div>
+
               <div class="flex justify-between text-gray-600">
                 <span>Tax (10%)</span>
                 <span>${{ tax.toFixed(2) }}</span>
@@ -253,7 +255,7 @@ const removeFromCart = async (cartItemId: string) => {
 const proceedToCheckout = () => {
   // TODO: Implement checkout flow
   showToast('Proceeding to checkout...', 'success')
-  // router.push('/buyer/checkout')
+  router.push('/buyer/checkout')
 }
 
 const totalItems = computed(() => {
@@ -286,6 +288,8 @@ const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     toast.value.show = false
   }, 3000)
 }
+
+
 </script>
 
 <style scoped>
