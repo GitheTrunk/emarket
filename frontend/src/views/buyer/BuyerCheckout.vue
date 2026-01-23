@@ -1,27 +1,44 @@
 <template>
+
   <div class="min-h-screen bg-gray-50">
+
     <div class="bg-white shadow-sm border-b border-gray-200 mb-6">
+
       <div class="max-w-7xl mx-auto px-4 py-6">
+
         <h1 class="text-3xl font-bold text-gray-900">Checkout</h1>
         <div class="flex items-center mt-2 text-sm text-gray-500">
+
           <router-link to="/cart" class="hover:text-orange-500 transition-colors">Cart</router-link>
+
           <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span class="font-semibold text-gray-900">Shipping & Payment</span>
+
         </div>
+
       </div>
+
     </div>
 
+
+
     <div class="max-w-7xl mx-auto px-4 pb-12">
+
+      <!--Simple message-->
       <div v-if="loading" class="text-center py-16">
         <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
         <p class="mt-4 text-gray-600">Processing order...</p>
       </div>
 
+
       <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!--order processing sections-->
         <div class="lg:col-span-2 space-y-6">
 
+          <!--User shipping info-->
           <div class="bg-white rounded-lg shadow-md p-6">
             <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
               <span class="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center mr-3 text-sm">1</span>
@@ -47,11 +64,14 @@
             </div>
           </div>
 
+          <!--payment method-->
           <div class="bg-white rounded-lg shadow-md p-6">
+
             <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
               <span class="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center mr-3 text-sm">2</span>
               Payment Details
             </h2>
+
             <div class="space-y-4">
               <div class="p-4 border-2 border-orange-500 bg-orange-50 rounded-lg flex items-center">
                 <input type="radio" checked class="w-4 h-4 text-orange-500">
@@ -76,25 +96,36 @@
                   <input v-model="form.cvc" placeholder="123" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none">
                 </div>
               </div>
+
             </div>
+
+
           </div>
         </div>
 
+        <!--Order summary-->
         <div class="lg:col-span-1">
+
+          <!--product details-->
           <div class="bg-white rounded-lg shadow-md p-6 sticky top-6">
+
             <h2 class="text-xl font-bold text-gray-900 mb-4">Review Order</h2>
 
             <div class="max-h-60 overflow-y-auto mb-4 space-y-3 pr-2">
               <div v-for="item in cartItems" :key="item.id" class="flex gap-3">
                 <img :src="item.product.images[0]" class="w-12 h-12 rounded object-cover bg-gray-100">
+
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-gray-900 truncate">{{ item.product.title }}</p>
                   <p class="text-xs text-gray-500">Qty: {{ item.quantity }}</p>
                 </div>
+
                 <p class="text-sm font-semibold text-gray-900">${{ (item.product.price * item.quantity).toFixed(2) }}</p>
+
               </div>
             </div>
 
+            <!--calculation details-->
             <div class="space-y-3 mb-4 pb-4 border-b border-t border-gray-100 pt-4">
               <div class="flex justify-between text-gray-600">
                 <span>Subtotal</span>
@@ -110,6 +141,7 @@
               </div>
             </div>
 
+            <!--total-->
             <div class="flex justify-between text-lg font-bold text-gray-900 mb-6">
               <span>Total</span>
               <span class="text-orange-500">${{ total.toFixed(2) }}</span>
@@ -126,11 +158,15 @@
             <p class="mt-4 text-center text-xs text-gray-500">
               By placing your order, you agree to our Terms of Service and Privacy Policy.
             </p>
+
+
           </div>
+
         </div>
       </div>
     </div>
 
+    <!--simple message after payment-->
     <div v-if="toast.show" class="fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50">
       <span :class="toast.type === 'success' ? 'text-green-400' : 'text-red-400'">●</span>
       <span>{{ toast.message }}</span>
@@ -142,6 +178,7 @@
 
 
 <script setup lang="ts">
+
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getCart } from '@/services/cartService'
@@ -165,6 +202,7 @@ const form = ref({
 
 const toast = ref({ show: false, message: '', type: 'success' })
 
+//loading
 onMounted(async () => {
   try {
     loading.value = true
@@ -179,7 +217,8 @@ onMounted(async () => {
   }
 })
 
-// Calculations (Matching Cart Logic)
+
+// Calculations payment
 const subtotal = computed(() => cartItems.value.reduce((sum, i) => sum + (i.product.price * i.quantity), 0))
 const shipping = computed(() => subtotal.value >= 50 ? 0 : 10)
 const tax = computed(() => subtotal.value * 0.1)
@@ -190,68 +229,61 @@ const showToast = (message: string, type: 'success' | 'error' = 'success') => {
   setTimeout(() => toast.value.show = false, 3000)
 }
 
-//checkout submit
 
+//place orders
 const submitOrder = async () => {
   try {
+    //security stuff
     loading.value = true;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Not logged in");
 
-    // 1. Capture items for the Success UI before deleting from DB
-    // We deep-clone to ensure the data persists after the cart is cleared
-    const purchasedItems = JSON.parse(JSON.stringify(cartItems.value));
+    // Loop through each cart item to create individual orders and transactions
+    for (const item of cartItems.value) {
 
-    // 2. Create the Order
-    const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          buyer_id: user.id,
-          seller_id: cartItems.value[0].product.seller_id,
-          total_price: total.value,
-          payment_status: 'paid',
-          order_status: 'pending'
-        })
-        .select().single();
+      //this is for inserting Order and GET THE ID BACK
+      const { data: newOrder, error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            buyer_id: user.id,
+            seller_id: item.product.seller_id,
+            product_id: item.product.id,
+            total_price: item.product.price * item.quantity,
+            quantity: item.quantity,
+            payment_status: 'paid',
+            order_status: 'pending'
+          })
+          .select() // This is critical to get the ID
+          .single();
 
-    if (orderError) throw orderError;
+      if (orderError) throw orderError;
 
-    // 3. Create the Transaction
-    const { error: transError } = await supabase
-        .from('transactions')
-        .insert({
-          order_id: order.id,
-          amount: total.value,
-          method: 'stripe',
-          status: 'success'
-        });
+      //create the Transaction
+      const { error: transError } = await supabase
+          .from('transactions')
+          .insert({
+            order_id: newOrder.id, // Linking to the order we just made
+            amount: item.product.price * item.quantity,
+            method: 'stripe',
+            status: 'success'
+          });
 
-    if (transError) throw transError;
+      if (transError) throw transError;
+    }
 
-    // 4. THE FIX: Clear the 'cart' table (Matching your schema)
-    const { error: deleteError } = await supabase
-        .from('cart')
-        .delete()
-        .eq('buyer_id', user.id); // Matches your buyer_id column
+    //this is for clearing buyer cart after placing orders
+    await supabase.from('cart').delete().eq('buyer_id', user.id);
 
-    if (deleteError) throw deleteError;
-
-    // 5. Clear local state and Redirect with data
-    cartItems.value = [];
-    router.push({
-      path: '/buyer/dashboard',
-      query: { ordered: 'true' },
-      state: { items: purchasedItems } // This passes the products to the next page
-    });
+    showToast('Order and Payment successful!', 'success');
+    router.push({ path: '/buyer/dashboard', query: { ordered: 'true' } });
 
   } catch (error: any) {
-    console.error("Checkout failed:", error);
-    showToast(error.message, 'error');
+    console.error("Process failed:", error);
+    showToast(error.message || 'An error occurred', 'error');
   } finally {
     loading.value = false;
   }
 };
-
 
 
 </script>

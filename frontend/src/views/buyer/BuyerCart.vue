@@ -288,6 +288,8 @@ const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     toast.value.show = false
   }, 3000)
 }
+
+
 </script>
 
 <style scoped>
