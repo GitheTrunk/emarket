@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import supabase from '@/lib/supabase'
 
 const loading = ref(false)
@@ -69,28 +69,40 @@ async function fetchAnalytics() {
 		const { data: { user } } = await supabase.auth.getUser()
 		if (!user) throw new Error('Not authenticated')
 
+		console.log('Fetching analytics for seller:', user.id)
+
 		// Orders for this seller
 		const { data: orders, error: ordersErr } = await supabase
 			.from('orders')
-			.select('*')
+			.select('id,total_price,order_status,buyer_id,created_at')
 			.eq('seller_id', user.id)
+
+		console.log('Orders fetch result:', { ordersErr, ordersLength: orders?.length, orders })
 
 		if (ordersErr) {
 			// If orders table not present, keep zeros
-			console.warn('Orders fetch error', ordersErr)
+			console.warn('Orders fetch error - details:', {
+				message: ordersErr.message,
+				code: ordersErr.code,
+				details: ordersErr.details
+			})
 		} else if (orders) {
-			const total = orders.reduce((s: number, o: any) => s + (Number(o.amount) || 0), 0)
+			const total = orders.reduce((s: number, o: any) => s + (Number(o.total_price) || 0), 0)
 			totalRevenue.value = total
 			averageOrderValue.value = orders.length ? total / orders.length : 0
 
-			// statuses
-			stats.delivered = orders.filter((o: any) => o.status === 'delivered').length
-			stats.shipped = orders.filter((o: any) => o.status === 'shipped').length
-			stats.processing = orders.filter((o: any) => o.status === 'processing').length
-			stats.pending = orders.filter((o: any) => o.status === 'pending').length
+			// statuses (using order_status column)
+			stats.delivered = orders.filter((o: any) => o.order_status === 'delivered').length
+			stats.shipped = orders.filter((o: any) => o.order_status === 'shipped').length
+			stats.processing = orders.filter((o: any) => o.order_status === 'processing').length
+			stats.pending = orders.filter((o: any) => o.order_status === 'pending').length
 
 			// conversion rate: completed (delivered) / total orders (fallback)
 			conversionRate.value = orders.length ? Math.round((stats.delivered / orders.length) * 100) : 0
+
+			// Customers: distinct buyers from these orders
+			const distinct = Array.from(new Set(orders.map((o: any) => o.buyer_id)))
+			productStats.customers = distinct.length
 		}
 
 		// Products for this seller
@@ -105,22 +117,6 @@ async function fetchAnalytics() {
 			productStats.total = products.length
 			productStats.active = products.filter((p: any) => p.status === 'active').length
 			productStats.inactive = products.filter((p: any) => p.status !== 'active').length
-		}
-
-		// Customers: distinct buyers who ordered from this seller
-		try {
-			const { data: customers } = await supabase
-				.from('orders')
-				.select('buyer_id', { count: 'exact', head: false })
-				.eq('seller_id', user.id)
-
-			if (customers) {
-				// customers is array of rows; compute distinct buyer ids
-				const distinct = Array.from(new Set(customers.map((c: any) => c.buyer_id)))
-				productStats.customers = distinct.length
-			}
-		} catch (e) {
-			// ignore
 		}
 
 	} catch (err: any) {

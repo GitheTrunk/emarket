@@ -12,7 +12,7 @@
           <p class="text-sm text-gray-400">Total Revenue</p>
           <p class="text-3xl font-bold mt-1">{{ formatCurrency(totalRevenue) }}</p>
         </div>
-        <div class="text-xs font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">+0.0%</div>
+        <div class="text-xs font-medium px-3 py-1 rounded-full" :class="revenueChange >= 0 ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'">{{ revenueChange >= 0 ? '+' : '' }}{{ revenueChange.toFixed(1) }}%</div>
       </div>
 
       <div class="p-6 rounded-xl bg-white border border-gray-100 shadow-sm flex items-center justify-between min-h-[88px]">
@@ -20,7 +20,7 @@
           <p class="text-sm text-gray-400">Total Orders</p>
           <p class="text-3xl font-bold mt-1">{{ totalOrders }}</p>
         </div>
-        <div class="text-xs font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">+0.0%</div>
+        <div class="text-xs font-medium px-3 py-1 rounded-full" :class="ordersChange >= 0 ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'">{{ ordersChange >= 0 ? '+' : '' }}{{ ordersChange.toFixed(1) }}%</div>
       </div>
 
       <div class="p-6 rounded-xl bg-white border border-gray-100 shadow-sm flex items-center justify-between min-h-[88px]">
@@ -28,7 +28,7 @@
           <p class="text-sm text-gray-400">Products Sold</p>
           <p class="text-3xl font-bold mt-1">{{ productsSold }}</p>
         </div>
-        <div class="text-xs font-medium text-red-600 bg-red-50 px-3 py-1 rounded-full">-0.0%</div>
+        <div class="text-xs font-medium px-3 py-1 rounded-full" :class="productsSoldChange >= 0 ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'">{{ productsSoldChange >= 0 ? '+' : '' }}{{ productsSoldChange.toFixed(1) }}%</div>
       </div>
 
       <div class="p-6 rounded-xl bg-white border border-gray-100 shadow-sm flex items-center justify-between min-h-[88px]">
@@ -36,7 +36,7 @@
           <p class="text-sm text-gray-400">New Customers</p>
           <p class="text-3xl font-bold mt-1">{{ newCustomers }}</p>
         </div>
-        <div class="text-xs font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">+0.0%</div>
+        <div class="text-xs font-medium px-3 py-1 rounded-full" :class="customersChange >= 0 ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'">{{ customersChange >= 0 ? '+' : '' }}{{ customersChange.toFixed(1) }}%</div>
       </div>
     </div>
 
@@ -97,10 +97,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, onUnmounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import supabase from '@/lib/supabase'
 import {
   Chart,
+  LineController,
   LineElement,
   CategoryScale,
   LinearScale,
@@ -109,21 +110,25 @@ import {
   Tooltip,
 } from 'chart.js'
 
-Chart.register(LineElement, CategoryScale, LinearScale, PointElement, Filler, Tooltip)
+Chart.register(LineController, LineElement, CategoryScale, LinearScale, PointElement, Filler, Tooltip)
 
 const totalRevenue = ref(0)
 const totalOrders = ref(0)
 const productsSold = ref(0)
 const newCustomers = ref(0)
 const topProducts = ref<any[]>([])
+
+// Trend percentages
+const revenueChange = ref(0)
+const ordersChange = ref(0)
+const productsSoldChange = ref(0)
+const customersChange = ref(0)
 const range = ref('7')
 const showCalendar = ref(false)
 const startDate = ref('')
 const endDate = ref('')
 const salesChart = ref<HTMLCanvasElement | null>(null)
 let chartInstance: Chart | null = null
-const ordersCache = ref<any[]>([])
-let ordersChannel: any = null
 
 function applyDateRange() {
   showCalendar.value = false
@@ -140,16 +145,90 @@ function clearDateRange() {
 
 const formatCurrency = (v: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v)
 
+const getOrderAmount = (o: any) => Number(o?.total_price ?? o?.amount ?? 0)
+
+async function calculateTrends(allOrders: any[], filteredOrders: any[]) {
+  try {
+    const n = Number(range.value) || 7
+    const now = new Date()
+    
+    // Determine period boundaries
+    let currentStart: Date
+    let previousStart: Date
+    let previousEnd: Date
+    
+    if (startDate.value && endDate.value) {
+      // Custom date range
+      currentStart = new Date(startDate.value)
+      previousEnd = new Date(currentStart)
+      previousEnd.setDate(previousEnd.getDate() - 1)
+      previousStart = new Date(previousEnd)
+      const days = Math.floor((new Date(endDate.value).getTime() - currentStart.getTime()) / (1000 * 60 * 60 * 24))
+      previousStart.setDate(previousStart.getDate() - days)
+    } else {
+      // Preset ranges: compare to previous equal period
+      currentStart = new Date(now)
+      currentStart.setDate(currentStart.getDate() - (n - 1))
+      previousEnd = new Date(currentStart)
+      previousEnd.setDate(previousEnd.getDate() - 1)
+      previousStart = new Date(previousEnd)
+      previousStart.setDate(previousStart.getDate() - (n - 1))
+    }
+    
+    const previousOrders = allOrders.filter((o: any) => {
+      const d = new Date(o.created_at)
+      return d >= previousStart && d <= previousEnd
+    })
+    
+    // Revenue trend
+    const prevRevenue = previousOrders.reduce((s: number, o: any) => s + getOrderAmount(o), 0)
+    const currentRevenue = totalRevenue.value
+    revenueChange.value = prevRevenue > 0 ? ((currentRevenue - prevRevenue) / prevRevenue) * 100 : (currentRevenue > 0 ? 100 : 0)
+    
+    // Orders trend
+    ordersChange.value = previousOrders.length > 0 ? ((filteredOrders.length - previousOrders.length) / previousOrders.length) * 100 : (filteredOrders.length > 0 ? 100 : 0)
+    
+    // Products sold trend
+    const prevProductsSold = previousOrders.reduce((s: number, o: any) => s + (Number(o.quantity) || 0), 0)
+    productsSoldChange.value = prevProductsSold > 0 ? ((productsSold.value - prevProductsSold) / prevProductsSold) * 100 : (productsSold.value > 0 ? 100 : 0)
+    
+    // New customers trend
+    const firstPurchaseMap = new Map<string, Date>()
+    for (const o of allOrders) {
+      const buyerId = String(o.buyer_id)
+      const orderDate = new Date(o.created_at)
+      if (!firstPurchaseMap.has(buyerId) || orderDate < firstPurchaseMap.get(buyerId)!) {
+        firstPurchaseMap.set(buyerId, orderDate)
+      }
+    }
+    
+    const prevNewCustomers = Array.from(firstPurchaseMap.entries()).filter(
+      ([_, date]) => date >= previousStart && date <= previousEnd
+    ).length
+    
+    customersChange.value = prevNewCustomers > 0 ? ((newCustomers.value - prevNewCustomers) / prevNewCustomers) * 100 : (newCustomers.value > 0 ? 100 : 0)
+  } catch (err) {
+    console.error('Trend calculation error', err)
+  }
+}
+
 async function fetchDashboard() {
   try {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) {
+      console.error('No user authenticated')
+      return
+    }
+
+    console.log('Fetching orders for seller:', user.id)
 
     // fetch orders for this seller
     const { data: orders, error: ordersErr } = await supabase
       .from('orders')
-      .select('id, amount, product_id, quantity, buyer_id, created_at, status')
+      .select('id, total_price, product_id, quantity, buyer_id, created_at, order_status, payment_status')
       .eq('seller_id', user.id)
+
+    console.log('Orders response:', { ordersErr, ordersLength: orders?.length })
 
     if (!ordersErr && orders) {
       // apply optional date filters from calendar
@@ -165,14 +244,39 @@ async function fetchDashboard() {
       }
 
       totalOrders.value = filteredOrders.length
-      totalRevenue.value = filteredOrders.reduce((s: number, o: any) => s + (Number(o.amount) || 0), 0)
+      totalRevenue.value = filteredOrders.reduce((s: number, o: any) => s + (Number(o.total_price) || 0), 0)
       productsSold.value = filteredOrders.reduce((s: number, o: any) => s + (Number(o.quantity) || 0), 0)
 
-      // new customers in last 30 days
-      const cutoff = new Date()
-      cutoff.setDate(cutoff.getDate() - 30)
-      const recentBuyers = filteredOrders.filter((o: any) => new Date(o.created_at) >= cutoff).map((o: any) => o.buyer_id)
-      newCustomers.value = Array.from(new Set(recentBuyers)).length
+      // Calculate trends by comparing to previous period
+      await calculateTrends(orders, filteredOrders)
+
+      // Get first-time customers: find users whose first order is in the current filtered period
+      const firstPurchaseMap = new Map<string, Date>()
+      for (const o of orders) {
+        const buyerId = String(o.buyer_id)
+        const orderDate = new Date(o.created_at)
+        if (!firstPurchaseMap.has(buyerId) || orderDate < firstPurchaseMap.get(buyerId)!) {
+          firstPurchaseMap.set(buyerId, orderDate)
+        }
+      }
+
+      // Count new customers in current period
+      const currentNewCustomers = new Set<string>()
+      for (const [buyerId, firstDate] of firstPurchaseMap.entries()) {
+        let isInPeriod = true
+        if (startDate.value) {
+          isInPeriod = isInPeriod && firstDate >= new Date(startDate.value)
+        }
+        if (endDate.value) {
+          const ed = new Date(endDate.value)
+          ed.setHours(23, 59, 59, 999)
+          isInPeriod = isInPeriod && firstDate <= ed
+        }
+        if (isInPeriod) {
+          currentNewCustomers.add(buyerId)
+        }
+      }
+      newCustomers.value = currentNewCustomers.size
 
       // aggregate top products by orders
       const map = new Map<string, { sold: number; revenue: number }>()
@@ -180,7 +284,7 @@ async function fetchDashboard() {
         if (!o.product_id) continue
         const prev = map.get(o.product_id) || { sold: 0, revenue: 0 }
         prev.sold += Number(o.quantity) || 0
-        prev.revenue += Number(o.amount) || 0
+        prev.revenue += Number(o.total_price) || 0
         map.set(o.product_id, prev)
       }
 
@@ -212,12 +316,13 @@ async function fetchDashboard() {
       topProducts.value = list.sort((a, b) => (b.sold + (b.cartCount || 0)) - (a.sold + (a.cartCount || 0))).slice(0, 4)
       
       // if you have a chart component it can be re-rendered here using filteredOrders
-      ordersCache.value = filteredOrders
       await nextTick()
       renderSalesChart(filteredOrders)
+    } else {
+      console.error('Orders fetch error:', ordersErr)
     }
   } catch (err) {
-    console.error('Dashboard fetch error', err)
+    console.error('Dashboard fetch error:', err)
   }
 }
 
@@ -251,7 +356,7 @@ function aggregateDailyAmount(orders: any[], opts: { n?: number; start?: string;
       const created = new Date(o.created_at)
       if (created < start || created > end) continue
       const idx = Math.floor((+created - +start) / msPerDay)
-      if (idx >= 0 && idx < counts.length) counts[idx] += Number(o.amount) || Number(o.total_price) || 0
+      if (idx >= 0 && idx < counts.length) counts[idx] += getOrderAmount(o)
     }
   } else {
     const n = opts.n || 7
@@ -266,7 +371,9 @@ function aggregateDailyAmount(orders: any[], opts: { n?: number; start?: string;
       const created = new Date(o.created_at)
       const diff = Math.floor((+today - +created) / msPerDay)
       if (diff >= 0 && diff < n) {
-        counts[n - 1 - diff] += Number(o.amount) || Number(o.total_price) || 0
+        if (counts && counts[n - 1 - diff] !== undefined) {
+          counts[n - 1 - diff] += getOrderAmount(o)
+        }
       }
     }
   }
@@ -313,41 +420,14 @@ function renderSalesChart(orders: any[]) {
       plugins: { tooltip: { enabled: false } },
       scales: {
         y: { display: false, beginAtZero: true },
-        x: { grid: { display: false, drawBorder: false }, ticks: { color: '#9CA3AF', padding: 8 } }
+        x: { grid: { display: false }, ticks: { color: '#9CA3AF', padding: 8 } }
       },
       layout: { padding: { left: 8, right: 8, top: 8, bottom: 6 } }
     }
   })
 }
 
-// setup realtime subscription to orders for this seller
-async function setupRealtime() {
-  try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    // remove existing channel if present
-    if (ordersChannel) {
-      try { await supabase.removeChannel(ordersChannel) } catch {}
-      ordersChannel = null
-    }
-
-    ordersChannel = supabase
-      .channel('public:orders')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `seller_id=eq.${user.id}` }, (payload) => {
-        // simple approach: refetch dashboard on any change
-        fetchDashboard()
-      })
-      .subscribe()
-  } catch (err) {
-    console.warn('Realtime setup failed', err)
-  }
-}
-
 onUnmounted(async () => {
-  if (ordersChannel) {
-    try { await supabase.removeChannel(ordersChannel) } catch (e) { /* ignore */ }
-    ordersChannel = null
-  }
   if (chartInstance) {
     chartInstance.destroy()
     chartInstance = null
@@ -365,8 +445,5 @@ watch(range, (val) => {
 
 onMounted(() => {
   fetchDashboard()
-  setupRealtime()
 })
-
-onMounted(fetchDashboard)
 </script>
