@@ -50,7 +50,7 @@
             </div>
             <div class="flex-1">
               <h4 class="text-gray-900 font-semibold text-lg">Order #{{ order.id.slice(0, 8) }}</h4>
-              <p class="text-gray-500 text-sm mt-1">Sold by Seller ID: {{ order.seller_id.slice(0, 8) }}</p>
+              <p class="text-gray-500 text-sm mt-1">Sold by Seller name: {{ order.seller_name }}</p>
             </div>
             <button class="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
               View Receipt
