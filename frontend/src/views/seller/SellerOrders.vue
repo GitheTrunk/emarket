@@ -10,29 +10,37 @@
       <div v-else>
         <table class="min-w-full text-sm">
           <thead>
-            <tr class="text-left text-xs text-gray-500 uppercase">
-              <th class="py-2">Order</th>
-              <th class="py-2">Buyer</th>
-              <th class="py-2">Amount</th>
-              <th class="py-2">Status</th>
-              <th class="py-2">Created</th>
-              <th class="py-2">Actions</th>
-            </tr>
+          <tr class="text-left text-xs text-gray-500 uppercase">
+            <th class="py-2">Order</th>
+            <th class="py-2">Buyer</th>
+            <th class="py-2">Product</th>
+            <th class="py-2">Quantity</th>
+            <th class="py-2">Total</th>
+            <th class="py-2">Status</th>
+            <th class="py-2">Actions</th>
+          </tr>
           </thead>
+
           <tbody>
-            <tr v-for="o in orders" :key="o.id" class="border-t">
-              <td class="py-3">ORD-{{ String(o.id).slice(0,8) }}</td>
-              <td class="py-3">{{ o.buyer_id || 'N/A' }}</td>
-              <td class="py-3">{{ formatCurrency(Number(o.total_price || o.amount || 0)) }}</td>
-              <td class="py-3">{{ o.order_status || o.status || 'unknown' }}</td>
-              <td class="py-3">{{ formatDate(o.created_at) }}</td>
-              <td class="py-3">
-                <button @click="viewOrder(o)" class="px-3 py-1 rounded bg-orange-500 text-white text-xs">View</button>
-              </td>
-            </tr>
-            <tr v-if="!orders.length">
-              <td colspan="6" class="py-6 text-center text-gray-500">No orders yet.</td>
-            </tr>
+          <tr v-for="o in orders" :key="o.id" class="border-t">
+            <td class="py-3">ORD-{{ String(o.id).slice(0,8) }}</td>
+            <td class="py-3">{{ o.buyer?.full_name || 'Unknown' }}</td>
+            <td class="py-3">{{ o.product?.title || 'Unknown' }}</td>
+            <td class="py-3">{{ o.quantity }}</td>
+            <td class="py-3">{{ formatCurrency(Number(o.total_price)) }}</td>
+            <td class="py-3 capitalize">{{ o.order_status }}</td>
+            <td class="py-3">
+              <button
+                  @click="viewOrder(o)"
+                  class="px-3 py-1 rounded bg-orange-500 text-white text-xs"
+              >
+                View
+              </button>
+            </td>
+          </tr>
+          <tr v-if="!orders.length">
+            <td colspan="7" class="py-6 text-center text-gray-500">No orders yet.</td>
+          </tr>
           </tbody>
         </table>
       </div>
@@ -40,29 +48,42 @@
 
     <!-- Order details modal -->
     <div v-if="showModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div class="bg-white rounded shadow-lg w-11/12 md:w-3/4 lg:w-1/2 p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="font-semibold">Order Details</h3>
+      <div class="bg-white rounded shadow-lg w-11/12 md:w-3/4 lg:w-1/2 p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-lg">Order Details</h3>
           <button @click="closeModal" class="text-gray-500">Close</button>
         </div>
-        <div v-if="modalLoading" class="py-6 text-center">Loading…</div>
-        <div v-else>
-          <div class="mb-3 text-sm text-gray-600">Order: ORD-{{ String(selectedOrder?.id || '').slice(0,8) }}</div>
-          <div class="mb-3 text-sm text-gray-600">Buyer: {{ selectedOrder?.buyer_id || 'N/A' }}</div>
-          <div class="mb-3 text-sm text-gray-600">Total: {{ formatCurrency(Number(selectedOrder?.total_price || selectedOrder?.amount || 0)) }}</div>
 
-          <div class="border-t pt-3">
-            <h4 class="font-medium mb-2">Items</h4>
-            <ul class="space-y-2">
-              <li v-for="it in orderItems" :key="it.id" class="flex justify-between">
-                <div>
-                  <div class="font-medium">{{ it.products?.title || it.product_title || 'Item' }}</div>
-                  <div class="text-xs text-gray-500">Qty: {{ it.quantity }}</div>
-                </div>
-                <div class="font-medium">{{ formatCurrency(Number(it.price || it.unit_price || 0)) }}</div>
-              </li>
-              <li v-if="!orderItems.length" class="text-sm text-gray-500">No items found.</li>
-            </ul>
+        <div v-if="modalLoading" class="py-6 text-center">Processing…</div>
+
+        <div v-else>
+          <div class="space-y-2 text-sm text-gray-700 mb-4">
+            <p><b>Order:</b> ORD-{{ String(selectedOrder?.id || '').slice(0,8) }}</p>
+            <p><b>Buyer:</b> {{ selectedOrder?.buyer?.full_name || 'Unknown' }}</p>
+            <p><b>Product:</b> {{ selectedOrder?.product?.title || 'Unknown' }}</p>
+            <p><b>Quantity:</b> {{ selectedOrder?.quantity }}</p>
+            <p><b>Total:</b> {{ formatCurrency(Number(selectedOrder?.total_price || 0)) }}</p>
+            <p><b>Status:</b> {{ selectedOrder?.order_status }}</p>
+          </div>
+
+          <div class="flex gap-3 mt-4" v-if="selectedOrder?.order_status === 'pending'">
+            <button
+                @click="updateStatus(selectedOrder.id, 'confirmed')"
+                class="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700"
+            >
+              Confirm Order
+            </button>
+
+            <button
+                @click="updateStatus(selectedOrder.id, 'cancelled')"
+                class="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700"
+            >
+              Cancel Order
+            </button>
+          </div>
+
+          <div v-else class="text-sm text-gray-500 text-right mt-4">
+            This order is {{ selectedOrder?.order_status }}.
           </div>
         </div>
       </div>
@@ -80,11 +101,15 @@ const orders = ref<any[]>([])
 const showModal = ref(false)
 const modalLoading = ref(false)
 const selectedOrder = ref<any | null>(null)
-const orderItems = ref<any[]>([])
 
-const formatCurrency = (v: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v)
+const formatCurrency = (v: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v)
+
 const formatDate = (v: string) => new Date(v).toLocaleString()
 
+// =====================
+// FETCH SELLER ORDERS
+// =====================
 async function fetchOrders() {
   loading.value = true
   try {
@@ -95,10 +120,18 @@ async function fetchOrders() {
     }
 
     const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('seller_id', user.id)
-      .order('created_at', { ascending: false })
+        .from('orders')
+        .select(`
+        id,
+        quantity,
+        total_price,
+        order_status,
+        created_at,
+        buyer:profiles!orders_buyer_id_fkey(full_name),
+        product:products(title)
+      `)
+        .eq('seller_id', user.id)
+        .order('created_at', { ascending: false })
 
     if (error) throw error
     orders.value = data || []
@@ -110,39 +143,53 @@ async function fetchOrders() {
   }
 }
 
-async function viewOrder(order: any) {
+// =====================
+// VIEW ORDER MODAL
+// =====================
+function viewOrder(order: any) {
   selectedOrder.value = order
   showModal.value = true
-  modalLoading.value = true
-  orderItems.value = []
-  try {
-    // fetch order_items and join product title if available
-    const { data, error } = await supabase
-      .from('order_items')
-      .select('*, products(title)')
-      .eq('order_id', order.id)
+}
 
-    if (error) {
-      console.warn('Could not fetch order items with product join, trying without join', error)
-      const { data: items, error: e2 } = await supabase.from('order_items').select('*').eq('order_id', order.id)
-      if (e2) throw e2
-      orderItems.value = items || []
-    } else {
-      orderItems.value = data || []
-    }
+// =====================
+// CLOSE MODAL
+// =====================
+function closeModal() {
+  showModal.value = false
+  selectedOrder.value = null
+}
+
+// =====================
+// UPDATE ORDER STATUS
+// =====================
+async function updateStatus(orderId: string, status: 'confirmed' | 'cancelled') {
+  try {
+    modalLoading.value = true
+
+    // Make sure the enum matches Postgres enum exactly
+    const { data, error } = await supabase
+        .from('orders')
+        .update({ order_status: status })
+        .eq('id', orderId)
+    // Ensure only the seller can update their order
+    //.eq('seller_id', currentUserId)
+
+    if (error) throw error
+
+    // Update local UI
+    const idx = orders.value.findIndex(o => o.id === orderId)
+    if (idx !== -1) orders.value[idx].order_status = status
+    if (selectedOrder.value?.id === orderId) selectedOrder.value.order_status = status
+
+    closeModal()
   } catch (err) {
-    console.error('Failed to load order items', err)
-    orderItems.value = []
+    console.error('Failed to update order status', err)
+    alert('Failed to update order: ' + (err as any).message)
   } finally {
     modalLoading.value = false
   }
 }
 
-function closeModal() {
-  showModal.value = false
-  selectedOrder.value = null
-  orderItems.value = []
-}
 
 onMounted(fetchOrders)
 </script>

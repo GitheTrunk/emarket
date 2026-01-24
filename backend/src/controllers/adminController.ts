@@ -6,6 +6,10 @@ import { supabase, supabaseAdmin } from '../lib/supabase.js'
  */
 export const getStats = async (req: Request, res: Response) => {
   try {
+    // Get time range from query params (default: 7d)
+    const timeRange = (req.query.timeRange as string) || '7d'
+    const daysCount = timeRange === '90d' ? 90 : timeRange === '30d' ? 30 : 7
+
     // Get user statistics using admin client
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers()
 
@@ -19,8 +23,8 @@ export const getStats = async (req: Request, res: Response) => {
       return acc
     }, {} as Record<string, number>)
 
-    // Get product statistics
-    const { data: products, error: productsError } = await supabase
+    // Get product statistics (admin client to bypass RLS)
+    const { data: products, error: productsError } = await supabaseAdmin
       .from('products')
       .select('status, price, category, title, created_at')
 
@@ -32,36 +36,70 @@ export const getStats = async (req: Request, res: Response) => {
       totalValue: products.reduce((sum, p) => sum + (p.price || 0), 0)
     }
 
-    // Get order statistics
-    const { data: orders, error: ordersError } = await supabase
+    // Get order statistics (admin client to bypass RLS)
+    const { data: orders, error: ordersError } = await supabaseAdmin
       .from('orders')
       .select('total_price, order_status, payment_status, created_at')
 
     if (ordersError) throw ordersError
 
-    // Calculate 7-day sales trend
-    const last7Days = []
+    // Try to get transactions for sales trend (more accurate)
+    const { data: transactions } = await supabaseAdmin
+      .from('transactions')
+      .select('amount, created_at, status')
+      .gte('created_at', new Date(Date.now() - daysCount * 24 * 60 * 60 * 1000).toISOString())
+
+    // Calculate sales trend based on selected time range
+    const salesTrend = []
     const now = new Date()
-    for (let i = 6; i >= 0; i--) {
+    
+    // For longer periods, group by week instead of day
+    const groupByWeek = daysCount > 30
+    const periods = groupByWeek ? Math.ceil(daysCount / 7) : daysCount
+    
+    for (let i = periods - 1; i >= 0; i--) {
       const date = new Date(now)
-      date.setDate(date.getDate() - i)
-      date.setHours(0, 0, 0, 0)
+      if (groupByWeek) {
+        date.setDate(date.getDate() - (i * 7))
+        date.setHours(0, 0, 0, 0)
+      } else {
+        date.setDate(date.getDate() - i)
+        date.setHours(0, 0, 0, 0)
+      }
+      
       const nextDate = new Date(date)
-      nextDate.setDate(nextDate.getDate() + 1)
+      nextDate.setDate(nextDate.getDate() + (groupByWeek ? 7 : 1))
 
-      const daySales = orders.filter(o => {
-        const orderDate = new Date(o.created_at)
-        return orderDate >= date && orderDate < nextDate
-      }).reduce((sum, o) => sum + (o.total_price || 0), 0)
+      // Calculate sales from transactions if available, fallback to orders
+      let periodSales = 0
+      
+      if (transactions && transactions.length > 0) {
+        periodSales = transactions
+          .filter(t => t.status === 'completed')
+          .filter(t => {
+            const txDate = new Date(t.created_at)
+            return txDate >= date && txDate < nextDate
+          })
+          .reduce((sum, t) => sum + (t.amount || 0), 0)
+      } else {
+        // Count confirmed and completed orders as sales
+        periodSales = orders
+          .filter(o => o.order_status === 'confirmed' || o.order_status === 'completed')
+          .filter(o => {
+            const orderDate = new Date(o.created_at)
+            return orderDate >= date && orderDate < nextDate
+          })
+          .reduce((sum, o) => sum + (o.total_price || 0), 0)
+      }
 
-      last7Days.push({
+      salesTrend.push({
         date: date.toISOString().split('T')[0],
-        sales: daySales
+        sales: periodSales
       })
     }
 
     // Get top products from order_items
-    const { data: orderItems, error: itemsError } = await supabase
+    const { data: orderItems, error: itemsError } = await supabaseAdmin
       .from('order_items')
       .select(`
         product_id,
@@ -72,7 +110,9 @@ export const getStats = async (req: Request, res: Response) => {
         )
       `)
 
-    const topProducts = orderItems ? (() => {
+    let topProducts: any[] = []
+    
+    if (!itemsError && orderItems) {
       const productMap = new Map()
       orderItems.forEach((item: any) => {
         const productId = item.product_id
@@ -92,10 +132,25 @@ export const getStats = async (req: Request, res: Response) => {
         }
       })
 
-      return Array.from(productMap.values())
+      topProducts = Array.from(productMap.values())
         .sort((a, b) => b.revenue - a.revenue)
         .slice(0, 4)
-    })() : []
+    } else {
+      // Fallback: Get top products by stock or price
+      const { data: products } = await supabase
+        .from('products')
+        .select('id, title, price, stock')
+        .order('price', { ascending: false })
+        .limit(4)
+      
+      if (products) {
+        topProducts = products.map(p => ({
+          name: p.title,
+          sales: p.stock || 0,
+          revenue: p.price || 0
+        }))
+      }
+    }
 
     // Category distribution
     const categoryMap = new Map()
@@ -108,7 +163,10 @@ export const getStats = async (req: Request, res: Response) => {
       total: orders.length,
       pending: orders.filter(o => o.order_status === 'pending').length,
       completed: orders.filter(o => o.order_status === 'completed').length,
-      totalRevenue: orders.reduce((sum, o) => sum + (o.total_price || 0), 0)
+      confirmed: orders.filter(o => o.order_status === 'confirmed').length,
+      totalRevenue: orders
+        .filter(o => o.order_status === 'confirmed' || o.order_status === 'completed')
+        .reduce((sum, o) => sum + (o.total_price || 0), 0)
     }
 
     // Calculate growth (compare last 7 days vs previous 7 days)
@@ -117,11 +175,15 @@ export const getStats = async (req: Request, res: Response) => {
     const last14DaysDate = new Date()
     last14DaysDate.setDate(last14DaysDate.getDate() - 14)
 
-    const recentOrders = orders.filter(o => new Date(o.created_at) >= last7DaysDate)
-    const previousOrders = orders.filter(o => {
-      const date = new Date(o.created_at)
-      return date >= last14DaysDate && date < last7DaysDate
-    })
+    const recentOrders = orders
+      .filter(o => o.order_status === 'confirmed' || o.order_status === 'completed')
+      .filter(o => new Date(o.created_at) >= last7DaysDate)
+    const previousOrders = orders
+      .filter(o => o.order_status === 'confirmed' || o.order_status === 'completed')
+      .filter(o => {
+        const date = new Date(o.created_at)
+        return date >= last14DaysDate && date < last7DaysDate
+      })
 
     const recentRevenue = recentOrders.reduce((sum, o) => sum + (o.total_price || 0), 0)
     const previousRevenue = previousOrders.reduce((sum, o) => sum + (o.total_price || 0), 0)
@@ -138,7 +200,7 @@ export const getStats = async (req: Request, res: Response) => {
       users: userStats,
       products: productStats,
       orders: orderStats,
-      salesTrend: last7Days,
+      salesTrend: salesTrend,
       topProducts: topProducts,
       categoryDistribution: Array.from(categoryMap.entries()).map(([name, count]) => ({ name, count })),
       growth: {
@@ -182,7 +244,8 @@ export const getAllUsers = async (req: Request, res: Response) => {
  */
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
-    const { data, error } = await supabase
+    // Use admin client to bypass RLS for admin endpoints
+    const { data, error } = await supabaseAdmin
       .from('products')
       .select(`
         *,
@@ -202,37 +265,76 @@ export const getAllProducts = async (req: Request, res: Response) => {
 }
 
 /**
- * GET /api/admin/transactions - Get transaction/order data
+ * GET /api/admin/transactions - Get transaction data
  */
 export const getTransactions = async (req: Request, res: Response) => {
   try {
-    // Get orders
-    const { data: orders, error: ordersError } = await supabase
-      .from('orders')
+    // Check if transactions table exists, otherwise fallback to orders
+    const { data: transactions, error: transactionsError } = await supabaseAdmin
+      .from('transactions')
       .select('*')
       .order('created_at', { ascending: false })
 
-    if (ordersError) throw ordersError
+    if (transactionsError) {
+      // Fallback to orders table if transactions doesn't exist
+      const { data: orders, error: ordersError } = await supabaseAdmin
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false })
 
+      if (ordersError) throw ordersError
+
+      // Get user data for buyers and sellers
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers()
+      if (authError) throw authError
+
+      const usersMap = new Map(authData.users.map(u => [u.id, u]))
+
+      // Transform orders to transaction format
+      const transformedTransactions = orders.map((order: any) => {
+        const buyer = usersMap.get(order.buyer_id)
+        const seller = usersMap.get(order.seller_id)
+
+        return {
+          id: `ORD-${order.id.slice(0, 8)}`,
+          buyer_id: order.buyer_id,
+          seller_id: order.seller_id,
+          product_id: null,
+          amount: order.total_price || 0,
+          status: order.order_status,
+          created_at: order.created_at,
+          buyer: buyer ? {
+            full_name: buyer.user_metadata?.full_name || 'Unknown',
+            email: buyer.email || 'N/A'
+          } : null,
+          seller: seller ? {
+            full_name: seller.user_metadata?.full_name || 'Unknown',
+            email: seller.email || 'N/A'
+          } : null,
+          product: {
+            title: 'Product Details'
+          }
+        }
+      })
+
+      res.json(transformedTransactions)
+      return
+    }
+
+    // Use transactions table directly - it already has the right structure
     // Get user data for buyers and sellers
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers()
     if (authError) throw authError
 
     const usersMap = new Map(authData.users.map(u => [u.id, u]))
 
-    // Transform the data
-    const transactions = orders.map((order: any) => {
-      const buyer = usersMap.get(order.buyer_id)
-      const seller = usersMap.get(order.seller_id)
+    // Enrich transactions with user data
+    const enrichedTransactions = transactions.map((txn: any) => {
+      const buyer = usersMap.get(txn.buyer_id)
+      const seller = usersMap.get(txn.seller_id)
 
       return {
-        id: `ORD-${order.id.slice(0, 8)}`,
-        buyer_id: order.buyer_id,
-        seller_id: order.seller_id,
-        product_id: null,
-        amount: order.total_price || 0,
-        status: order.order_status,
-        created_at: order.created_at,
+        ...txn,
         buyer: buyer ? {
           full_name: buyer.user_metadata?.full_name || 'Unknown',
           email: buyer.email || 'N/A'
@@ -242,12 +344,12 @@ export const getTransactions = async (req: Request, res: Response) => {
           email: seller.email || 'N/A'
         } : null,
         product: {
-          title: 'Product Details'
+          title: txn.product_id || 'Product Details'
         }
       }
     })
 
-    res.json(transactions)
+    res.json(enrichedTransactions)
   } catch (error) {
     console.error('Error fetching transactions:', error)
     res.status(500).json({ error: 'Failed to fetch transactions' })
@@ -289,15 +391,31 @@ export const getReports = async (req: Request, res: Response) => {
         )
       `)
 
-    if (itemsError) throw itemsError
-
-    // Aggregate sales by category
-    const categorySales = orderItems.reduce((acc: Record<string, number>, item: any) => {
-      const category = (item.products && item.products.category) ? item.products.category : 'Uncategorized'
-      const sales = (item.price || 0) * (item.quantity || 1)
-      acc[category] = (acc[category] || 0) + sales
-      return acc
-    }, {} as Record<string, number>)
+    // If order_items doesn't exist or error, fallback to products for categories
+    let categorySales: Record<string, number> = {}
+    
+    if (itemsError || !orderItems) {
+      // Fallback: Get category data from products table
+      const { data: products, error: productsError } = await supabase
+        .from('products')
+        .select('category, price')
+      
+      if (!productsError && products) {
+        categorySales = products.reduce((acc: Record<string, number>, product: any) => {
+          const category = product.category || 'Uncategorized'
+          acc[category] = (acc[category] || 0) + (product.price || 0)
+          return acc
+        }, {} as Record<string, number>)
+      }
+    } else {
+      // Aggregate sales by category from order_items
+      categorySales = orderItems.reduce((acc: Record<string, number>, item: any) => {
+        const category = (item.products && item.products.category) ? item.products.category : 'Uncategorized'
+        const sales = (item.price || 0) * (item.quantity || 1)
+        acc[category] = (acc[category] || 0) + sales
+        return acc
+      }, {} as Record<string, number>)
+    }
 
     const totalCategorySales = Object.values(categorySales).reduce((sum, sales) => sum + sales, 0)
     const topCategories = Object.entries(categorySales)

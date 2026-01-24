@@ -84,6 +84,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import supabase from '../../lib/supabase'
+import { api } from '../../services/api'
 
 interface Profile {
   id: string
@@ -138,25 +139,7 @@ const fetchUsers = async () => {
   loading.value = true
   error.value = ''
   try {
-    // Use the existing api service pattern
-    const session = await supabase.auth.getSession()
-    const token = session.data.session?.access_token
-    
-    // Direct API URL construction
-    const apiUrl = 'http://localhost:3000/api'
-    
-    const response = await fetch(`${apiUrl}/admin/users`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch users')
-    }
-
-    const data = await response.json()
+    const data = await api.get('/admin/users')
     users.value = data
   } catch (err: any) {
     console.error('Error fetching users:', err)

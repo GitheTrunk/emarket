@@ -172,8 +172,66 @@ const fetchReports = async () => {
 }
 
 const exportReports = () => {
-  // TODO: Implement export functionality
-  alert('Export functionality will be implemented soon')
+  if (!reports.value) {
+    alert('No reports to export');
+    return;
+  }
+  
+  try {
+    // Create comprehensive CSV with multiple sections
+    const lines: string[] = [];
+    
+    // Sales Summary
+    lines.push('Sales Summary');
+    lines.push('Metric,Value');
+    lines.push(`Total Sales,"${formatCurrency(reports.value.sales.totalSales)}"`);
+    lines.push(`Total Orders,${reports.value.sales.totalOrders}`);
+    lines.push(`Average Order Value,"${formatCurrency(reports.value.sales.averageOrderValue)}"`);
+    lines.push('');
+    
+    // Users Summary
+    lines.push('Users Summary');
+    lines.push('Metric,Value');
+    lines.push(`New Users,${reports.value.users.newUsers}`);
+    lines.push(`Active Users,${reports.value.users.activeUsers}`);
+    lines.push(`Growth Rate,${reports.value.users.growthRate}%`);
+    lines.push('');
+    
+    // Top Categories
+    lines.push('Top Categories');
+    lines.push('Category,Sales,Percentage');
+    reports.value.sales.topCategories.forEach(cat => {
+      lines.push(`"${cat.category}","${formatCurrency(cat.sales)}",${cat.percentage}%`);
+    });
+    lines.push('');
+    
+    // Sales Trend
+    lines.push('Sales Trend');
+    lines.push('Date,Sales');
+    reports.value.sales.salesTrend.forEach(trend => {
+      lines.push(`${trend.date},"${formatCurrency(trend.sales)}"`);
+    });
+    
+    const csvContent = lines.join('\n');
+    
+    // Create and download CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `reports_${selectedPeriod.value}days_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    alert('Reports exported successfully!');
+  } catch (err) {
+    console.error('Export error:', err);
+    alert('Failed to export reports');
+  }
 }
 
 onMounted(() => {

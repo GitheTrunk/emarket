@@ -81,7 +81,7 @@
 									<button class="rounded-md border border-blue-200 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50" @click="editProduct(item.id)">
 										Edit
 									</button>
-									<button class="rounded-md border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100" @click="pause(item.id)">
+									<button v-if="statusLabel(item.status) == 'Active'" class="rounded-md border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100" @click="pause(item.id)">
 										Pause
 									</button>
 									<button v-if="statusLabel(item.status) == 'Paused'" class="rounded-md border border-green-200 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-100" @click="unPause(item.id)">
