@@ -273,6 +273,8 @@
 
               <!--add to wishlist button-->
               <div class="flex gap-3">
+
+
                 <button
                   @click="toggleWishlist(selectedProduct.id)"
                   class="px-6 py-3 border-2 rounded-lg font-semibold transition-colors"
@@ -329,9 +331,10 @@ import supabase from '@/lib/supabase'
 import type { Product } from '@/types/database'
 import { addToWishlist, removeProductFromWishlist, isInWishlist as checkWishlist } from '@/services/wishlistService'
 import { addToCart as addProductToCart } from '@/services/cartService'
-import router from "@/router";
 
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const products = ref<Product[]>([])
 const loading = ref(true)
 const error = ref('')
@@ -485,17 +488,17 @@ const toggleWishlist = async (productId: string) => {
 }
 
 
-//load to wishlist table
+//load to wishlist status
 const loadWishlistStatus = async () => {
   try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Fetch all product IDs from the wishlist table for this user in ONE go
+    // Correct column name: buyer_id
     const { data, error } = await supabase
         .from('wishlist')
         .select('product_id')
-        .eq('user_id', user.id)
+        .eq('buyer_id', user.id)
 
     if (error) throw error
 
@@ -514,10 +517,8 @@ onMounted(async () => {
   // Now we load from the database so the red hearts persist
   await loadWishlistStatus()
 })
-onMounted(async () => {
-  await fetchProducts()
-  await loadWishlistStatus()
-})
+
+
 
 
 </script>

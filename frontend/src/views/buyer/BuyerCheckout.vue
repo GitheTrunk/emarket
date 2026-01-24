@@ -178,7 +178,6 @@
 
 
 <script setup lang="ts">
-
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getCart } from '@/services/cartService'
@@ -189,7 +188,7 @@ const router = useRouter()
 const cartItems = ref<CartItem[]>([])
 const loading = ref(false)
 
-
+// Form data
 const form = ref({
   fullName: '',
   address: '',
@@ -200,9 +199,13 @@ const form = ref({
   cvc: ''
 })
 
+// Form validation errors
+const errors = ref<Record<string, string>>({})
+
+// Toast for messages
 const toast = ref({ show: false, message: '', type: 'success' })
 
-//loading
+// Load cart on mount
 onMounted(async () => {
   try {
     loading.value = true
@@ -217,31 +220,51 @@ onMounted(async () => {
   }
 })
 
-
-// Calculations payment
-const subtotal = computed(() => cartItems.value.reduce((sum, i) => sum + (i.product.price * i.quantity), 0))
-const shipping = computed(() => subtotal.value >= 50 ? 0 : 10)
+// Payment calculations
+const subtotal = computed(() =>
+    cartItems.value.reduce((sum, i) => sum + i.product.price * i.quantity, 0)
+)
+const shipping = computed(() => (subtotal.value >= 50 ? 0 : 10))
 const tax = computed(() => subtotal.value * 0.1)
 const total = computed(() => subtotal.value + shipping.value + tax.value)
 
+// Show toast
 const showToast = (message: string, type: 'success' | 'error' = 'success') => {
   toast.value = { show: true, message, type }
-  setTimeout(() => toast.value.show = false, 3000)
+  setTimeout(() => (toast.value.show = false), 3000)
 }
 
+// Validate form
+const validateForm = (): boolean => {
+  errors.value = {}
 
-//place orders
+  if (!form.value.fullName.trim()) errors.value.fullName = 'Full Name is required'
+  if (!form.value.address.trim()) errors.value.address = 'Street Address is required'
+  if (!form.value.city.trim()) errors.value.city = 'City is required'
+  if (!form.value.zip.trim()) errors.value.zip = 'Postal Code is required'
+  if (!form.value.cardNumber.trim()) errors.value.cardNumber = 'Card Number is required'
+  if (!form.value.expiry.trim()) errors.value.expiry = 'Expiry Date is required'
+  if (!form.value.cvc.trim()) errors.value.cvc = 'CVC is required'
+
+  return Object.keys(errors.value).length === 0
+}
+
+// Submit order
 const submitOrder = async () => {
+  if (!validateForm()) {
+    showToast('Please fill in all required fields', 'error')
+    return
+  }
+
   try {
-    //security stuff
-    loading.value = true;
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Not logged in");
+    loading.value = true
 
-    // Loop through each cart item to create individual orders and transactions
+    // Ensure user is logged in
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('You must be logged in to place an order')
+
+    // Loop through cart items to create orders and transactions
     for (const item of cartItems.value) {
-
-      //this is for inserting Order and GET THE ID BACK
       const { data: newOrder, error: orderError } = await supabase
           .from('orders')
           .insert({
@@ -253,37 +276,33 @@ const submitOrder = async () => {
             payment_status: 'paid',
             order_status: 'pending'
           })
-          .select() // This is critical to get the ID
-          .single();
+          .select()
+          .single()
 
-      if (orderError) throw orderError;
+      if (orderError) throw orderError
 
-      //create the Transaction
       const { error: transError } = await supabase
           .from('transactions')
           .insert({
-            order_id: newOrder.id, // Linking to the order we just made
+            order_id: newOrder.id,
             amount: item.product.price * item.quantity,
             method: 'stripe',
             status: 'success'
-          });
+          })
 
-      if (transError) throw transError;
+      if (transError) throw transError
     }
 
-    //this is for clearing buyer cart after placing orders
-    await supabase.from('cart').delete().eq('buyer_id', user.id);
+    // Clear cart
+    await supabase.from('cart').delete().eq('buyer_id', user.id)
 
-    showToast('Order and Payment successful!', 'success');
-    router.push({ path: '/buyer/dashboard', query: { ordered: 'true' } });
-
+    showToast('Order and payment successful!', 'success')
+    router.push({ path: '/buyer/dashboard', query: { ordered: 'true' } })
   } catch (error: any) {
-    console.error("Process failed:", error);
-    showToast(error.message || 'An error occurred', 'error');
+    console.error('Process failed:', error)
+    showToast(error.message || 'An error occurred', 'error')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
-
-
+}
 </script>
