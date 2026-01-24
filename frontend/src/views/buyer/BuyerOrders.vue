@@ -51,7 +51,7 @@
             <div class="flex-1">
               <h4 class="text-gray-900 font-semibold text-lg">Order #{{ order.id.slice(0, 8) }}</h4>
               <p class="text-gray-500 text-sm mt-1">
-                Sold by: {{ order.seller?.store_name || order.seller?.full_name || 'Unknown seller' }}
+                Sold by: {{ order.seller?.full_name || 'Unknown seller' }}
               </p>
 
             </div>
@@ -64,12 +64,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import supabase from '@/lib/supabase'
 
 const orders = ref<any[]>([])
 const loading = ref(true)
 
+let channel: any = null
+
+// ---------- Fetch buyer orders ----------
 const fetchOrders = async () => {
   try {
     loading.value = true
@@ -94,13 +97,37 @@ const fetchOrders = async () => {
   }
 }
 
-const formatDate = (dateStr: string) => {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  })
+// ---------- Realtime listener ----------
+const subscribeToOrders = async () => {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  channel = supabase
+      .channel('buyer-orders')
+      .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'orders',
+            filter: `buyer_id=eq.${user.id}`
+          },
+          payload => {
+            const updated = payload.new
+            const idx = orders.value.findIndex(o => o.id === updated.id)
+            if (idx !== -1) orders.value[idx] = updated
+          }
+      )
+      .subscribe()
 }
+
+// ---------- Helpers ----------
+const formatDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
 
 const statusClass = (status: string) => {
   switch (status) {
@@ -119,5 +146,13 @@ const orderStatusClass = (status: string) => {
   }
 }
 
-onMounted(fetchOrders)
+// ---------- Lifecycle ----------
+onMounted(async () => {
+  await fetchOrders()
+  await subscribeToOrders()
+})
+
+onUnmounted(() => {
+  if (channel) supabase.removeChannel(channel)
+})
 </script>

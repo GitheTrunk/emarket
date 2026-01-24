@@ -273,6 +273,8 @@
 
               <!--add to wishlist button-->
               <div class="flex gap-3">
+
+
                 <button
                   @click="toggleWishlist(selectedProduct.id)"
                   class="px-6 py-3 border-2 rounded-lg font-semibold transition-colors"
@@ -329,9 +331,10 @@ import supabase from '@/lib/supabase'
 import type { Product } from '@/types/database'
 import { addToWishlist, removeProductFromWishlist, isInWishlist as checkWishlist } from '@/services/wishlistService'
 import { addToCart as addProductToCart } from '@/services/cartService'
-import router from "@/router";
 
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const products = ref<Product[]>([])
 const loading = ref(true)
 const error = ref('')
