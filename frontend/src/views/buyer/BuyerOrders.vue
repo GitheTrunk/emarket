@@ -50,11 +50,12 @@
             </div>
             <div class="flex-1">
               <h4 class="text-gray-900 font-semibold text-lg">Order #{{ order.id.slice(0, 8) }}</h4>
-              <p class="text-gray-500 text-sm mt-1">Sold by Seller name: {{ order.seller_name }}</p>
+              <p class="text-gray-500 text-sm mt-1">
+                Sold by: {{ order.seller?.store_name || order.seller?.full_name || 'Unknown seller' }}
+              </p>
+
             </div>
-            <button class="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
-              View Receipt
-            </button>
+
           </div>
         </div>
       </div>
@@ -75,15 +76,17 @@ const fetchOrders = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Fetch orders and join with transactions if needed
     const { data, error } = await supabase
         .from('orders')
-        .select('*') // If you have order_items, you'd use '*, order_items(*, products(*))'
+        .select(`
+        *,
+        seller:profiles!orders_seller_id_fkey(full_name, store_name)
+      `)
         .eq('buyer_id', user.id)
         .order('created_at', { ascending: false })
 
     if (error) throw error
-    orders.value = data
+    orders.value = data || []
   } catch (err) {
     console.error('Error fetching orders:', err)
   } finally {
@@ -116,7 +119,5 @@ const orderStatusClass = (status: string) => {
   }
 }
 
-onMounted(() => {
-  fetchOrders()
-})
+onMounted(fetchOrders)
 </script>

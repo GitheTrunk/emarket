@@ -485,17 +485,17 @@ const toggleWishlist = async (productId: string) => {
 }
 
 
-//load to wishlist table
+//load to wishlist status
 const loadWishlistStatus = async () => {
   try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Fetch all product IDs from the wishlist table for this user in ONE go
+    // Correct column name: buyer_id
     const { data, error } = await supabase
         .from('wishlist')
         .select('product_id')
-        .eq('user_id', user.id)
+        .eq('buyer_id', user.id)
 
     if (error) throw error
 
@@ -514,10 +514,8 @@ onMounted(async () => {
   // Now we load from the database so the red hearts persist
   await loadWishlistStatus()
 })
-onMounted(async () => {
-  await fetchProducts()
-  await loadWishlistStatus()
-})
+
+
 
 
 </script>
