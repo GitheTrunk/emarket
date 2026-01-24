@@ -6,6 +6,7 @@ import adminRouter from './admin.js'
 import profileRouter from './profile.js'
 import addressesRouter from './addresses.js'
 import preferencesRouter from './preferences.js'
+import ordersRouter from './orders.js'
 
 const router = Router()
 
@@ -17,5 +18,6 @@ router.use('/admin', adminRouter)
 router.use('/profile', profileRouter)
 router.use('/addresses', addressesRouter)
 router.use('/preferences', preferencesRouter)
+router.use('/orders', ordersRouter)
 
 export default router
