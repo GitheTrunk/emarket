@@ -334,12 +334,10 @@ export default {
 
       //catergories
       categories: [
-        { id: 1, name: 'Electronics', icon: 'fas fa-laptop', count: 12500, color: '#4ECDC4' },
-        { id: 2, name: 'Fashion', icon: 'fas fa-tshirt', count: 8900, color: '#FF6B6B' },
-        { id: 3, name: 'Home & Garden', icon: 'fas fa-home', count: 7400, color: '#FFD166' },
-        { id: 4, name: 'Automotive', icon: 'fas fa-car', count: 5600, color: '#06D6A0' },
-        { id: 5, name: 'Beauty', icon: 'fas fa-spa', count: 4300, color: '#118AB2' },
-        { id: 6, name: 'Sports', icon: 'fas fa-football-ball', count: 3200, color: '#EF476F' },
+        { id: 1, name: 'Electronics', icon: 'fas fa-laptop', count: 100, color: '#4ECDC4' },
+        { id: 2, name: 'Clothing', icon: 'fas fa-tshirt', count: 220, color: '#FF6B6B' },
+        { id: 3, name: 'Home & Living', icon: 'fas fa-home', count: 100, color: '#FFD166' },
+        { id: 4, name: 'Books', icon: 'fas fa-book', count: 420, color: '#06D6A0' },
       ],
 
       //seller
@@ -365,7 +363,7 @@ export default {
         {
           id: 3,
           name: 'HomeEssentials',
-          category: 'Home Goods',
+          category: 'Home & Living',
           rating: 4.7,
           listings: 156,
           verified: true,
@@ -373,8 +371,8 @@ export default {
         },
         {
           id: 4,
-          name: 'Somnang AutoParts',
-          category: 'Automotive',
+          name: 'PU SOM Book Store',
+          category: 'Books',
           rating: 4.6,
           listings: 98,
           verified: true,
@@ -386,7 +384,7 @@ export default {
       featuredBuyers: [
         {
           id: 1,
-          name: 'Sengleang Pro mix',
+          name: 'Somnang',
           interest: 'Bulk Electronics',
           purchases: 245,
           verified: true,
@@ -394,7 +392,7 @@ export default {
         },
         {
           id: 2,
-          name: 'BOBACLAT',
+          name: 'Xing I',
           interest: 'Fashion Wholesale',
           purchases: 189,
           verified: true,
@@ -402,7 +400,7 @@ export default {
         },
         {
           id: 3,
-          name: 'JOMPEY Hotel',
+          name: 'NEARY',
           interest: 'Hospitality Supplies',
           purchases: 156,
           verified: true,
@@ -410,7 +408,7 @@ export default {
         },
         {
           id: 4,
-          name: 'GIC',
+          name: 'LEAKANA',
           interest: 'Educational Materials',
           purchases: 98,
           verified: true,
