@@ -253,9 +253,13 @@ const removeFromCart = async (cartItemId: string) => {
 }
 
 const proceedToCheckout = () => {
-  // TODO: Implement checkout flow
-  showToast('Proceeding to checkout...', 'success')
-  router.push('/buyer/checkout')
+  if (cartItems.value.length === 0) {
+    showToast('Your cart is empty', 'error');
+    return;
+  }
+  
+  showToast('Proceeding to checkout...', 'success');
+  router.push('/buyer/checkout');
 }
 
 const totalItems = computed(() => {

@@ -188,8 +188,49 @@ const filterTransactions = () => {
 }
 
 const exportTransactions = () => {
-  // TODO: Implement export functionality
-  alert('Export functionality will be implemented soon')
+  const filtered = filteredTransactions.value;
+  
+  if (!filtered || filtered.length === 0) {
+    alert('No transactions to export');
+    return;
+  }
+  
+  try {
+    // Convert transactions to CSV format
+    const headers = ['Transaction ID', 'Date', 'Buyer', 'Seller', 'Product', 'Amount', 'Status'];
+    const rows = filtered.map((transaction: Transaction) => [
+      transaction.id,
+      new Date(transaction.created_at).toLocaleString(),
+      transaction.buyer?.full_name || 'Unknown',
+      transaction.seller?.full_name || 'Unknown',
+      transaction.product?.title || 'Unknown Product',
+      `$${transaction.amount.toFixed(2)}`,
+      transaction.status
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row: any[]) => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+    
+    // Create and download CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `transactions_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    alert('Transactions exported successfully!');
+  } catch (err) {
+    console.error('Export error:', err);
+    alert('Failed to export transactions');
+  }
 }
 
 onMounted(() => {

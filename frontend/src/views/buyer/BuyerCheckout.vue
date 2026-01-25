@@ -9,7 +9,7 @@
         <h1 class="text-3xl font-bold text-gray-900">Checkout</h1>
         <div class="flex items-center mt-2 text-sm text-gray-500">
 
-          <router-link to="/cart" class="hover:text-orange-500 transition-colors">Cart</router-link>
+          <router-link to="/buyer/cart" class="hover:text-orange-500 transition-colors">Cart</router-link>
 
           <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

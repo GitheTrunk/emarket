@@ -458,10 +458,17 @@ const addToCart = async (product: Product) => {
 
 
 //buy now
-const buyNow = (product: Product) => {
-  // TODO: Implement checkout flow
-  alert(`Proceeding to checkout for "${product.title}"`)
-  router.push('/buyer/checkout')
+const buyNow = async (product: Product) => {
+  try {
+    // Add product to cart first if not already present
+    await addProductToCart(product.id, 1);
+    
+    // Navigate to checkout
+    router.push('/buyer/checkout');
+  } catch (error) {
+    console.error('Error in buy now:', error);
+    alert('Failed to proceed with purchase. Please try again.');
+  }
 }
 
 //product in wishlist

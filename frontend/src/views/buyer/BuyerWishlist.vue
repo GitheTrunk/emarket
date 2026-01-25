@@ -157,9 +157,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { getWishlist, removeFromWishlist as removeWishlistItem, clearWishlist as clearAllWishlist } from '@/services/wishlistService'
 import { addToCart as addProductToCart } from '@/services/cartService'
 import type { WishlistItem } from '@/types/database'
+
+const router = useRouter()
 
 const wishlistItems = ref<WishlistItem[]>([])
 const loading = ref(true)
@@ -227,8 +230,8 @@ const addToCart = async (product: any) => {
 }
 
 const viewProduct = (productId: string) => {
-  // TODO: Navigate to product detail page
-  console.log('View product:', productId)
+  // Navigate to product detail page
+  router.push(`/buyer/dashboard?product=${productId}`);
 }
 
 const formatDate = (dateString: string) => {

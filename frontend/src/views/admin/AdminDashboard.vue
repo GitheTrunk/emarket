@@ -3,9 +3,9 @@
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-semibold">Dashboard</h1>
             <select v-model="timeRange" class="border rounded px-3 py-2">
-                <option value="7">Last 7 days</option>
-                <option value="30">Last 30 days</option>
-                <option value="90">Last 90 days</option>
+                <option value="7d">Last 7 days</option>
+                <option value="30d">Last 30 days</option>
+                <option value="90d">Last 90 days</option>
             </select>
         </div>
 
@@ -174,7 +174,7 @@ import { api } from '../../services/api'
 
 Chart.register(...registerables);
 
-const timeRange = ref('7');
+const timeRange = ref('7d');
 const salesChartRef = ref<HTMLCanvasElement | null>(null);
 const categoryChartRef = ref<HTMLCanvasElement | null>(null);
 
@@ -262,8 +262,8 @@ const fetchDashboardData = async () => {
     error.value = '';
 
     try {
-        // Fetch comprehensive stats from backend
-        const statsResponse = await api.get('/admin/stats');
+        // Fetch comprehensive stats from backend with time range parameter
+        const statsResponse = await api.get(`/admin/stats?timeRange=${timeRange.value}`);
         
         // Update KPI stats with real data
         stats.value = {
@@ -304,7 +304,17 @@ const updateCharts = (statsResponse: any) => {
     if (salesData.value.datasets[0] && statsResponse.salesTrend) {
         const labels = statsResponse.salesTrend.map((d: any) => {
             const date = new Date(d.date)
-            return date.toLocaleDateString('en-US', { weekday: 'short' })
+            // Format based on time range
+            if (timeRange.value === '90d') {
+                // For 90 days, show week numbers or short dates
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            } else if (timeRange.value === '30d') {
+                // For 30 days, show dates
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            } else {
+                // For 7 days, show weekdays
+                return date.toLocaleDateString('en-US', { weekday: 'short' })
+            }
         })
         const data = statsResponse.salesTrend.map((d: any) => d.sales)
         
@@ -342,6 +352,13 @@ const initCharts = () => {
                 plugins: {
                     legend: {
                         display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Sales: ' + formatCurrency(context.parsed.y || 0);
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -349,6 +366,11 @@ const initCharts = () => {
                         beginAtZero: true,
                         grid: {
                             color: '#f3f4f6'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + (value as number).toLocaleString();
+                            }
                         }
                     },
                     x: {
@@ -384,8 +406,7 @@ onMounted(() => {
 });
 
 watch(timeRange, () => {
-    // TODO: Fetch data based on selected time range
-    console.log('Time range changed to:', timeRange.value);
+    // Refetch dashboard data when time range changes
     fetchDashboardData();
 });
 </script>

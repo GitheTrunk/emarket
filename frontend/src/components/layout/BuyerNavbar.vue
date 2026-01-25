@@ -140,9 +140,25 @@ onMounted(() => {
 });
 
 const logout = async () => {
-  // TODO: Implement logout logic
-  alert("Loging out!!");
-  router.push('/home');
+  try {
+    const { default: supabase } = await import('@/lib/supabase');
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      console.error('Error logging out:', error);
+      alert('Failed to logout. Please try again.');
+      return;
+    }
+    
+    // Clear local storage
+    localStorage.removeItem('supabase.auth.token');
+    
+    // Redirect to home page
+    router.push('/home');
+  } catch (error) {
+    console.error('Logout error:', error);
+    alert('Failed to logout. Please try again.');
+  }
 };
 </script>
 
