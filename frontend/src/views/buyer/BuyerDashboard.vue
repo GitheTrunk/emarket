@@ -159,9 +159,17 @@
             </div>
 
             <!-- Title -->
-            <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+            <h3 class="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">
               {{ product.title }}
             </h3>
+
+            <!-- Seller line (new) -->
+            <p class="text-sm text-gray-500 mb-2">
+              Sold by
+              <span class="text-gray-700 font-medium" @click.stop="viewSeller(product.seller?.id)" style="cursor:pointer;">
+                {{ product.seller?.name || 'Unknown Seller' }}
+              </span>
+            </p>
 
             <!-- Description -->
             <p class="text-sm text-gray-600 mb-3 line-clamp-2">
@@ -248,7 +256,21 @@
               <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded mb-3">
                 {{ selectedProduct.category }}
               </span>
-              <h3 class="text-2xl font-bold text-gray-900 mb-4">{{ selectedProduct.title }}</h3>
+              <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ selectedProduct.title }}</h3>
+
+              <!-- Seller info in modal (new) -->
+              <div class="flex items-center gap-3 mb-4">
+                <div v-if="selectedProduct.seller?.avatar_url" class="w-10 h-10 rounded-full overflow-hidden">
+                  <img :src="selectedProduct.seller.avatar_url" alt="seller avatar" class="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Sold by</p>
+                  <button @click="viewSeller(selectedProduct.seller?.id)" class="text-sm font-medium text-blue-600 hover:underline">
+                    {{ selectedProduct.seller?.name || 'Unknown Seller' }}
+                  </button>
+                </div>
+              </div>
+
               <p class="text-3xl font-bold text-blue-600 mb-4">${{ selectedProduct.price.toFixed(2) }}</p>
               
               <div class="mb-4">
@@ -358,12 +380,57 @@ const fetchProducts = async () => {
         .from('products')
         .select('*')
         .eq('status', 'active')
-        .gt('stock', 0) // <--- ADD THIS: Only fetch where stock is Greater Than 0
+        .gt('stock', 0)
         .order('created_at', { ascending: false })
 
     if (fetchError) throw fetchError
 
-    products.value = data || []
+    const prods = (data || []) as any[]
+
+    // If no products, clear and return
+    if (prods.length === 0) {
+      products.value = []
+      return
+    }
+
+    // Collect distinct seller ids from products
+    const sellerIds = Array.from(new Set(prods.map(p => p.seller_id).filter(Boolean)))
+
+    let profiles: any[] = []
+    if (sellerIds.length > 0) {
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', sellerIds)
+
+      if (profilesError) {
+        console.warn('Failed to fetch profiles, continuing without seller info', profilesError)
+      } else {
+        profiles = profilesData || []
+      }
+    }
+
+    // Build map id -> seller info
+    const profileMap = new Map<string, any>()
+    for (const p of profiles) {
+      // Try common name fields
+      const name = p.seller_full || p.full_name || p.name || p.username || `${p.first_name || ''} ${p.last_name || ''}`.trim()
+      profileMap.set(p.id, {
+        id: p.id,
+        name: name || 'Unknown Seller',
+        avatar_url: p.avatar_url || p.profile_image || null
+      })
+    }
+
+    // Attach seller to each product
+    const enriched = prods.map(p => {
+      return {
+        ...p,
+        seller: profileMap.get(p.seller_id) || { id: p.seller_id, name: 'Unknown Seller' }
+      }
+    })
+
+    products.value = enriched as Product[]
   } catch (err) {
     console.error('Error fetching products:', err)
     error.value = `Failed to load products.`
@@ -430,6 +497,11 @@ const viewProduct = (product: Product) => {
   currentImage.value = product.images && product.images.length > 0 ? product.images[0] || '' : ''
 }
 
+// New helper to view seller profile
+const viewSeller = (sellerId?: string) => {
+  if (!sellerId) return
+  router.push(`/seller/${sellerId}`)
+}
 
 const closeModal = () => {
   selectedProduct.value = null
