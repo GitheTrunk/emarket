@@ -482,7 +482,12 @@
 
 
 <script setup lang="ts">
-
+type SellerInfo = {
+  id: string
+  name: string
+  avatar_url?: string | null
+}
+type ProductWithSeller = Product & { seller?: SellerInfo }
 import { ref, computed, onMounted } from 'vue'
 import supabase from '@/lib/supabase'
 import type { Product } from '@/types/database'
@@ -492,19 +497,19 @@ import { addToCart as addProductToCart } from '@/services/cartService'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const products = ref<Product[]>([])
+const products = ref<ProductWithSeller[]>([])
 const loading = ref(true)
 const error = ref('')
 const searchQuery = ref('')
 const selectedCategory = ref('')
 const sortBy = ref('newest')
-const selectedProduct = ref<Product | null>(null)
+const selectedProduct = ref<ProductWithSeller | null>(null)
 const currentImage = ref('')
 const wishlistProductIds = ref<Set<string>>(new Set())
 
 // New: related product lists
-const relatedBySeller = ref<Product[]>([])
-const relatedRecommended = ref<Product[]>([])
+const relatedBySeller = ref<ProductWithSeller[]>([])
+const relatedRecommended = ref<ProductWithSeller[]>([])
 
 const categories = ref<string[]>(['Electronics', 'Clothing', 'Home & Living', 'Books', 'Other'])
 
@@ -568,7 +573,7 @@ const fetchProducts = async () => {
       }
     })
 
-    products.value = enriched as Product[]
+    products.value = enriched as ProductWithSeller[]
   } catch (err) {
     console.error('Error fetching products:', err)
     error.value = `Failed to load products.`
@@ -630,7 +635,7 @@ const truncate = (text: string, max = 80) => {
 }
 
 //display product
-const viewProduct = async (product: Product) => {
+const viewProduct = async (product: ProductWithSeller) => {
   selectedProduct.value = product
   currentImage.value = product.images && product.images.length > 0 ? product.images[0] || '' : ''
   // fetch related products after opening
@@ -650,7 +655,7 @@ const closeModal = () => {
 
 
 //data to cart tables
-const addToCart = async (product: Product) => {
+const addToCart = async (product: ProductWithSeller) => {
   try {
 
     //if product out of stock
@@ -670,7 +675,7 @@ const addToCart = async (product: Product) => {
 
 
 //buy now
-const buyNow = async (product: Product) => {
+const buyNow = async (product: ProductWithSeller) => {
   try {
     // Add product to cart first if not already present
     await addProductToCart(product.id, 1);
@@ -752,11 +757,11 @@ const attachSellerInfoToProducts = async (prods: any[]) => {
       avatar_url: p.avatar_url || p.profile_image || null
     })
   }
-  return prods.map(p => ({ ...p, seller: profileMap.get(p.seller_id) || { id: p.seller_id, name: 'Unknown Seller' } }))
+  return prods.map(p => ({ ...p, seller: profileMap.get(p.seller_id) || { id: p.seller_id, name: 'Unknown Seller' } })) as ProductWithSeller[]
 }
 
 // Fetch related products when viewing a product
-const fetchRelatedProducts = async (product: Product) => {
+const fetchRelatedProducts = async (product: ProductWithSeller) => {
   try {
     // Reset
     relatedBySeller.value = []
