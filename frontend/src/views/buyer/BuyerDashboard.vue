@@ -119,16 +119,12 @@
             </div>
 
 
-            <!-- Stock Badge -->
+            <!-- Stock Badge (dynamic color/text based on numeric stock) -->
             <div class="absolute top-2 right-2">
               <span
-                v-if="product.stock > 0"
-                class="px-2 py-1 bg-green-500 text-white text-xs font-semibold rounded"
+                :class="['px-2 py-1 text-xs font-semibold rounded', stockBadgeClass(product.stock)]"
               >
-                In Stock
-              </span>
-              <span v-else class="px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded">
-                Out of Stock
+                {{ stockBadgeText(product.stock) }}
               </span>
             </div>
 
@@ -336,6 +332,145 @@
 
 
           </div>
+
+          <!--display more products information-->
+          <div class="mt-8 border-t pt-6">
+
+            <!--more from this seller-->
+            <div class="mb-6">
+              <h4 class="text-lg font-semibold text-gray-900 mb-3">More from this seller</h4>
+
+              <div v-if="relatedBySeller.length === 0" class="text-sm text-gray-500">No other items from this seller.</div>
+
+              <!-- horizontal scroller with compact cards -->
+
+              <div v-else class="related-scroll">
+                <div
+                  v-for="rp in relatedBySeller"
+                  :key="rp.id"
+                  class="related-card group"
+                  @click="viewProduct(rp)"
+                  role="button"
+                >
+
+
+                  <!--more from this seller card-->
+                  <div class="relative overflow-hidden rounded-t">
+                    <img
+                      v-if="rp.images && rp.images.length"
+                      :src="rp.images[0]"
+                      class="w-full h-36 object-cover transition-transform duration-300 group-hover:scale-105"
+                      alt=""
+                    />
+                    <div v-else class="w-full h-36 bg-gray-100 flex items-center justify-center">
+                      <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
+                      </svg>
+                    </div>
+
+                    <!--stock status-->
+                    <span
+                      class="related-status-badge"
+                      :class="rp.stock === 0 ? 'bg-red-500' : (rp.stock <= 5 ? 'bg-yellow-500' : 'bg-green-500')"
+                    >
+                      {{ rp.stock === 0 ? 'Out of stock' : (rp.stock <= 5 ? `${rp.stock} left` : 'In stock') }}
+                    </span>
+
+                    <!--add to cart-->
+                    <button
+                      class="quick-add-btn"
+                      @click.stop="addToCart(rp)"
+                      :title="rp.stock === 0 ? 'Out of stock' : 'Add to cart'"
+                      :disabled="rp.stock === 0"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </button>
+
+                  </div>
+
+                  <!--bottom part of the card-->
+                  <div class="p-3">
+                    <div class="text-sm font-semibold text-gray-900 line-clamp-2">{{ truncate(rp.title, 48) }}</div>
+                    <div class="text-sm text-blue-600 font-bold mt-1">{{ formatPrice(rp.price) }}</div>
+
+                    <div class="flex items-center gap-2 mt-3">
+                      <img v-if="rp.seller?.avatar_url" :src="rp.seller.avatar_url" alt="seller" class="seller-avatar" />
+                      <div>
+                        <div class="text-xs text-gray-600">{{ rp.seller?.name || 'Unknown' }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <!--recommand for you card-->
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 mb-3">Recommended for you</h4>
+              <div v-if="relatedRecommended.length === 0" class="text-sm text-gray-500">No recommendations available.</div>
+
+              <div v-else class="related-scroll">
+                <div
+                  v-for="rp in relatedRecommended"
+                  :key="rp.id"
+                  class="related-card group"
+                  @click="viewProduct(rp)"
+                  role="button"
+                >
+
+                  <div class="relative overflow-hidden rounded-t">
+                    <img
+                      v-if="rp.images && rp.images.length"
+                      :src="rp.images[0]"
+                      class="w-full h-36 object-cover transition-transform duration-300 group-hover:scale-105"
+                      alt=""
+                    />
+                    <div v-else class="w-full h-36 bg-gray-100 flex items-center justify-center">
+                      <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
+                      </svg>
+                    </div>
+
+                    <!--stock status-->
+                    <span
+                      class="related-status-badge"
+                      :class="rp.stock === 0 ? 'bg-red-500' : (rp.stock <= 5 ? 'bg-yellow-500' : 'bg-green-500')"
+                    >
+                      {{ rp.stock === 0 ? 'Out of stock' : (rp.stock <= 5 ? `${rp.stock} left` : 'In stock') }}
+                    </span>
+
+                    <button
+                      class="quick-add-btn"
+                      @click.stop="addToCart(rp)"
+                      :title="rp.stock === 0 ? 'Out of stock' : 'Add to cart'"
+                      :disabled="rp.stock === 0"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div class="p-3">
+                    <div class="text-sm font-semibold text-gray-900 line-clamp-2">{{ truncate(rp.title, 48) }}</div>
+                    <div class="text-sm text-blue-600 font-bold mt-1">{{ formatPrice(rp.price) }}</div>
+
+                    <div class="flex items-center gap-2 mt-3">
+                      <img v-if="rp.seller?.avatar_url" :src="rp.seller.avatar_url" alt="seller" class="seller-avatar" />
+                      <div>
+                        <div class="text-xs text-gray-600">{{ rp.seller?.name || 'Unknown' }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </div>
     </div>
@@ -367,8 +502,11 @@ const selectedProduct = ref<Product | null>(null)
 const currentImage = ref('')
 const wishlistProductIds = ref<Set<string>>(new Set())
 
-const categories = ref<string[]>(['Electronics', 'Clothing', 'Home & Living', 'Books', 'Other'])
+// New: related product lists
+const relatedBySeller = ref<Product[]>([])
+const relatedRecommended = ref<Product[]>([])
 
+const categories = ref<string[]>(['Electronics', 'Clothing', 'Home & Living', 'Books', 'Other'])
 
 // Fetch products from database
 const fetchProducts = async () => {
@@ -492,9 +630,11 @@ const truncate = (text: string, max = 80) => {
 }
 
 //display product
-const viewProduct = (product: Product) => {
+const viewProduct = async (product: Product) => {
   selectedProduct.value = product
   currentImage.value = product.images && product.images.length > 0 ? product.images[0] || '' : ''
+  // fetch related products after opening
+  await fetchRelatedProducts(product)
 }
 
 // New helper to view seller profile
@@ -591,6 +731,178 @@ const loadWishlistStatus = async () => {
 }
 
 
+// Helper: attach seller/profile info to products array
+const attachSellerInfoToProducts = async (prods: any[]) => {
+  if (!prods || prods.length === 0) return []
+  const sellerIds = Array.from(new Set(prods.map(p => p.seller_id).filter(Boolean)))
+  let profiles: any[] = []
+  if (sellerIds.length > 0) {
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('id', sellerIds)
+    if (!profilesError && profilesData) profiles = profilesData
+  }
+  const profileMap = new Map<string, any>()
+  for (const p of profiles) {
+    const name = p.seller_full || p.full_name || p.name || p.username || `${p.first_name || ''} ${p.last_name || ''}`.trim()
+    profileMap.set(p.id, {
+      id: p.id,
+      name: name || 'Unknown Seller',
+      avatar_url: p.avatar_url || p.profile_image || null
+    })
+  }
+  return prods.map(p => ({ ...p, seller: profileMap.get(p.seller_id) || { id: p.seller_id, name: 'Unknown Seller' } }))
+}
+
+// Fetch related products when viewing a product
+const fetchRelatedProducts = async (product: Product) => {
+  try {
+    // Reset
+    relatedBySeller.value = []
+    relatedRecommended.value = []
+
+    // 1) Other products by same seller (exclude current)
+    if (product.seller_id) {
+      const { data: sellerProds, error: sellerError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('seller_id', product.seller_id)
+        .neq('id', product.id)
+        .eq('status', 'active')
+        .gt('stock', 0)
+        .limit(6)
+
+      if (!sellerError && sellerProds) {
+        relatedBySeller.value = await attachSellerInfoToProducts(sellerProds as any[])
+      }
+    }
+
+    // 2) Recommended for buyer (use order history: products buyer ordered the most)
+    const { data: userResp } = await supabase.auth.getUser()
+    const user = userResp?.user
+    let recommendedProds: any[] = []
+
+    if (user) {
+      // Fetch buyer's orders
+      const { data: ordersData } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('buyer_id', user.id)
+
+      const orderIds = (ordersData || []).map((o: any) => o.id).filter(Boolean)
+
+      if (orderIds.length > 0) {
+        // Try to fetch order_items linked to those orders
+        const { data: itemsData } = await supabase
+          .from('order_items')
+          .select('product_id, quantity')
+          .in('order_id', orderIds)
+
+        // If order_items returned rows, aggregate quantities
+        const counts: Record<string, number> = {}
+        if (itemsData && itemsData.length > 0) {
+          (itemsData || []).forEach((it: any) => {
+            const pid = it.product_id
+            const qty = typeof it.quantity === 'number' ? it.quantity : 1
+            if (!pid) return
+            counts[pid] = (counts[pid] || 0) + qty
+          })
+        } else {
+          // Fallback: some schemas store product references on orders directly
+          const { data: ordersWithProduct } = await supabase
+            .from('orders')
+            .select('product_id, quantity')
+            .eq('buyer_id', user.id)
+          ;(ordersWithProduct || []).forEach((o: any) => {
+            const pid = o.product_id
+            const qty = typeof o.quantity === 'number' ? o.quantity : 1
+            if (!pid) return
+            counts[pid] = (counts[pid] || 0) + qty
+          })
+        }
+
+        // Build sorted list of product ids by most ordered, exclude current product
+        const topProductIds = Object.entries(counts)
+          .sort((a, b) => b[1] - a[1])
+          .map(([pid]) => pid)
+          .filter(pid => pid !== product.id)
+          .slice(0, 8)
+
+        if (topProductIds.length > 0) {
+          const { data: topProducts } = await supabase
+            .from('products')
+            .select('*')
+            .in('id', topProductIds)
+            .eq('status', 'active')
+            .gt('stock', 0)
+
+          if (topProducts) recommendedProds = topProducts as any[]
+        }
+      }
+    }
+
+    // If no recommendations from order history, fallback to wishlist/categories (existing logic)
+    if (recommendedProds.length === 0) {
+      // get wishlist product ids
+      const { data: wishlistData } = await supabase
+        .from('wishlist')
+        .select('product_id')
+        .eq('buyer_id', user?.id)
+
+      const wishlistIds = (wishlistData || []).map((w: any) => w.product_id).filter(Boolean)
+      if (wishlistIds.length > 0) {
+        // fetch those products to infer categories
+        const { data: wishProds } = await supabase
+          .from('products')
+          .select('category')
+          .in('id', wishlistIds)
+        const categoriesCount: Record<string, number> = {}
+        ;(wishProds || []).forEach((wp: any) => {
+          if (!wp?.category) return
+          categoriesCount[wp.category] = (categoriesCount[wp.category] || 0) + 1
+        })
+        const topCategories = Object.entries(categoriesCount)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 2)
+          .map(([cat]) => cat)
+
+        if (topCategories.length > 0) {
+          const { data: recData } = await supabase
+            .from('products')
+            .select('*')
+            .in('category', topCategories)
+            .neq('id', product.id)
+            .eq('status', 'active')
+            .gt('stock', 0)
+            .limit(8)
+          if (recData) recommendedProds = recData as any[]
+        }
+      }
+    }
+
+    // Final fallback: same category (excluding same seller for variety)
+    if (recommendedProds.length === 0 && product.category) {
+      const { data: sameCatData } = await supabase
+        .from('products')
+        .select('*')
+        .eq('category', product.category)
+        .neq('id', product.id)
+        .neq('seller_id', product.seller_id)
+        .eq('status', 'active')
+        .gt('stock', 0)
+        .limit(8)
+      if (sameCatData) recommendedProds = sameCatData as any[]
+    }
+
+    // Attach seller info to recommended set and set state (limit to 5 each)
+    relatedRecommended.value = (await attachSellerInfoToProducts(recommendedProds)).slice(0, 5)
+    relatedBySeller.value = relatedBySeller.value.slice(0, 5)
+  } catch (err) {
+    console.error('Error fetching related products:', err)
+  }
+}
+
 onMounted(async () => {
   await fetchProducts()
   // Now we load from the database so the red hearts persist
@@ -598,7 +910,37 @@ onMounted(async () => {
 })
 
 
+// small helper to format price for related cards
+const formatPrice = (p: number) => {
+  if (typeof p !== 'number') return ''
+  return `$${p.toFixed(2)}`
+}
 
+// reuse existing addToCart; keep this small wrapper if you want special behavior later
+const quickAddToCart = async (product: Product) => {
+  await addToCart(product)
+}
+
+
+// Helper: return a badge class string based on numeric stock
+const stockBadgeClass = (stock: number | undefined) => {
+  if (!stock || stock === 0) {
+    return 'bg-red-500 text-white'
+  }
+  if (stock <= 5) {
+    // low stock: yellow background, dark text for contrast
+    return 'bg-yellow-500 text-gray-800'
+  }
+  // plenty of stock
+  return 'bg-green-500 text-white'
+}
+
+// Helper: return display text for badge
+const stockBadgeText = (stock: number | undefined) => {
+  if (!stock || stock === 0) return 'Out of Stock'
+  if (stock <= 5) return `${stock} left`
+  return 'In Stock'
+}
 
 </script>
 
@@ -611,5 +953,81 @@ onMounted(async () => {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Related products styling */
+.related-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+.related-card {
+  min-width: 200px;
+  max-width: 200px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(16,24,40,0.06);
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease;
+  border: 1px solid rgba(15,23,42,0.04);
+  display: flex;
+  flex-direction: column;
+}
+.related-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 24px rgba(16,24,40,0.08);
+}
+.seller-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 1px solid rgba(15,23,42,0.06);
+}
+.quick-add-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(16,24,40,0.06);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s ease, transform .12s ease;
+}
+.quick-add-btn:hover {
+  background: #FFEDD5; /* pale orange */
+  transform: translateY(-2px);
+}
+.quick-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* stock badge for related cards */
+.related-status-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 4px 8px;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 9999px;
+  font-size: 12px;
+  box-shadow: 0 4px 14px rgba(2,6,23,0.08);
+  z-index: 20;
+  display: inline-block;
+  line-height: 1;
+}
+
+/* preserve contrast on yellow */
+.related-status-badge.bg-yellow-500 {
+  color: #1f2937; /* darker text for yellow background */
 }
 </style>
