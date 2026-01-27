@@ -112,17 +112,16 @@ const login = async () => {
 
     // data.user exists when login succeeds
     const user = data.user;
-    const role = user.user_metadata.role;
+    const role = user?.user_metadata?.role;
 
-    // Debugging
-    console.log("Logged in as:", role);
-
-    successMessage.value = "Login successful! Redirecting...";
-
-    if (role === "buyer") router.push("/buyer/dashboard");
-    else if (role === "seller") router.push("/seller/dashboard");
-    else if (role === "admin") router.push("/admin/dashboard");
-    else errorMessage.value = "Unknown role. Contact admin.";
+    if (role === "buyer") {
+      successMessage.value = "Login successful! Redirecting to dashboard...";
+      router.push("/buyer/dashboard");
+    } else if (role) {
+      errorMessage.value = `Unknown role: ${role}. Contact admin.`;
+    } else {
+      errorMessage.value = "No role assigned. Contact admin.";
+    }
   } catch (err) {
     errorMessage.value = "An unexpected error occurred. Please try again.";
   } finally {

@@ -34,7 +34,7 @@
       </button>
       <p class="mt-3 text-right text-gray-400">
         <router-link to="/forgot-password" class="hover:underline">Forgot Password?</router-link>
-      </p>=
+      </p>
     </form>
   </div>
 </template>
@@ -70,10 +70,7 @@ const login = async () => {
 
   // data.user exists when login succeeds
   const user = data.user;
-  const role = user.user_metadata.role;
-
-  // Debugging
-  console.log("Logged in as:", role);
+  const role = user?.user_metadata?.role;
 
   if (role === "admin") router.push("/admin/dashboard");
   else alert("You are not authorized to access admin panel.");
