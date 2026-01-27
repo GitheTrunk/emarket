@@ -1,0 +1,13 @@
+@startuml
+
+' Minimal Level 0 DFD: User, System, Database
+actor User
+rectangle "System" as System
+database "Database" as DB
+
+User --> System : Request/Action
+System --> DB : Store/Retrieve Data
+DB --> System : Data
+System --> User : Response/View
+
+@enduml

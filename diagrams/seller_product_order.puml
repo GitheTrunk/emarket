@@ -1,0 +1,38 @@
+@startuml
+' Data Flow Diagram: Seller Adds Product and Manages Orders
+
+actor Seller
+
+rectangle "Frontend (Vue.js)" as FE {
+  [Seller UI]
+}
+
+rectangle "Backend (Node.js/Express)" as BE {
+  [Product Controller]
+  [Order Controller]
+  [Product Service]
+  [Order Service]
+  [Supabase Integration]
+}
+
+database "Supabase DB" as DB
+
+' Seller adds product
+Seller --> [Seller UI] : Enter product details, click "Add Product"
+[Seller UI] --> [Product Controller] : POST /products (product info)
+[Product Controller] --> [Product Service] : addProduct(seller, product)
+[Product Service] --> [Supabase Integration] : Insert product
+[Supabase Integration] --> DB : SQL Insert
+[Product Service] --> [Product Controller] : Success/Failure
+[Product Controller] --> [Seller UI] : API Response
+
+' Seller manages orders
+Seller --> [Seller UI] : View/manage orders
+[Seller UI] --> [Order Controller] : GET /orders (filter by seller)
+[Order Controller] --> [Order Service] : getOrders(seller)
+[Order Service] --> [Supabase Integration] : Query orders
+[Supabase Integration] --> DB : SQL Select
+[Order Service] --> [Order Controller] : Orders data
+[Order Controller] --> [Seller UI] : API Response (orders list)
+
+@enduml

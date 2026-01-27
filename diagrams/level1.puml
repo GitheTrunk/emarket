@@ -1,0 +1,42 @@
+@startuml
+' Data Flow Diagram Level 1 for eMarket System
+
+actor Buyer
+actor Seller
+actor Admin
+
+rectangle "Frontend (Vue.js)" as FE {
+  [Buyer UI]
+  [Seller UI]
+  [Admin UI]
+}
+
+rectangle "Backend (Node.js/Express)" as BE {
+  [API Controllers]
+  [Business Services]
+  [Supabase Integration]
+}
+
+database "Supabase DB" as DB
+
+' User interactions
+Buyer --> [Buyer UI] : Uses
+Seller --> [Seller UI] : Uses
+Admin --> [Admin UI] : Uses
+
+' Frontend to Backend
+[Buyer UI] --> [API Controllers] : REST API Calls
+[Seller UI] --> [API Controllers] : REST API Calls
+[Admin UI] --> [API Controllers] : REST API Calls
+
+' Backend internal flow
+[API Controllers] --> [Business Services] : Function Calls
+[Business Services] --> [Supabase Integration] : Data Access
+[Supabase Integration] --> DB : SQL/CRUD
+
+' Backend responses
+[API Controllers] --> [Buyer UI] : API Response
+[API Controllers] --> [Seller UI] : API Response
+[API Controllers] --> [Admin UI] : API Response
+
+@enduml

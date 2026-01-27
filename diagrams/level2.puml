@@ -1,0 +1,38 @@
+@startuml
+' Data Flow Diagram Level 2 for eMarket System (Example: Buyer places an order)
+
+actor Buyer
+
+rectangle "Frontend (Vue.js)" as FE {
+  [Buyer UI]
+}
+
+rectangle "Backend (Node.js/Express)" as BE {
+  [Cart Controller]
+  [Order Controller]
+  [Cart Service]
+  [Order Service]
+  [Supabase Integration]
+}
+
+database "Supabase DB" as DB
+
+' Step 1: Buyer adds product to cart
+Buyer --> [Buyer UI] : Selects product, clicks "Add to Cart"
+[Buyer UI] --> [Cart Controller] : POST /cart/add (product info)
+[Cart Controller] --> [Cart Service] : addProductToCart(user, product)
+[Cart Service] --> [Supabase Integration] : Insert cart item
+[Supabase Integration] --> DB : SQL Insert
+[Cart Service] --> [Cart Controller] : Success/Failure
+[Cart Controller] --> [Buyer UI] : API Response
+
+' Step 2: Buyer places order
+Buyer --> [Buyer UI] : Clicks "Checkout"
+[Buyer UI] --> [Order Controller] : POST /orders (cart info, address)
+[Order Controller] --> [Order Service] : createOrder(user, cart, address)
+[Order Service] --> [Supabase Integration] : Insert order, update inventory
+[Supabase Integration] --> DB : SQL Insert/Update
+[Order Service] --> [Order Controller] : Order confirmation
+[Order Controller] --> [Buyer UI] : API Response (order details)
+
+@enduml

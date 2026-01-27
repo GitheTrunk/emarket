@@ -1,0 +1,38 @@
+@startuml
+' Data Flow Diagram: Admin Manages Users and System Monitoring
+
+actor Admin
+
+rectangle "Frontend (Vue.js)" as FE {
+  [Admin UI]
+}
+
+rectangle "Backend (Node.js/Express)" as BE {
+  [User Controller]
+  [Admin Controller]
+  [User Service]
+  [Admin Service]
+  [Supabase Integration]
+}
+
+database "Supabase DB" as DB
+
+' Admin manages users
+Admin --> [Admin UI] : View/manage users
+[Admin UI] --> [User Controller] : GET/POST/PUT/DELETE /users
+[User Controller] --> [User Service] : manageUser(admin, userData)
+[User Service] --> [Supabase Integration] : Query/update user data
+[Supabase Integration] --> DB : SQL Select/Insert/Update/Delete
+[User Service] --> [User Controller] : Success/Failure/Data
+[User Controller] --> [Admin UI] : API Response
+
+' Admin system monitoring
+Admin --> [Admin UI] : View system stats/logs
+[Admin UI] --> [Admin Controller] : GET /system/monitor
+[Admin Controller] --> [Admin Service] : getSystemStats()
+[Admin Service] --> [Supabase Integration] : Query logs/statistics
+[Supabase Integration] --> DB : SQL Select
+[Admin Service] --> [Admin Controller] : Stats/logs data
+[Admin Controller] --> [Admin UI] : API Response (stats/logs)
+
+@enduml
