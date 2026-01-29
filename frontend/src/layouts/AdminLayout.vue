@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex bg-gray-100">
+  <div class="min-h-screen flex bg-gradient-to-br from-gray-50 via-gray-100 to-slate-100">
 
     <!-- Sidebar -->
     <AdminSidebar />
@@ -9,7 +9,7 @@
       <!-- Admin Topbar -->
       <AdminNavbar />
 
-      <main class="p-6">
+      <main class="p-8">
         <router-view />
       </main>
 
