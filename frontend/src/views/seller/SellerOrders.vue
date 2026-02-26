@@ -64,24 +64,50 @@
             <p><b>Quantity:</b> {{ selectedOrder?.quantity }}</p>
             <p><b>Total:</b> {{ formatCurrency(Number(selectedOrder?.total_price || 0)) }}</p>
             <p><b>Status:</b> {{ selectedOrder?.order_status }}</p>
+            <p><b>Created At:</b> {{ formatDate(selectedOrder?.created_at) }}</p>
+            <template v-if="selectedOrder">
+              <p v-if="selectedOrder.ordered_at"><b>Ordered At:</b> {{ formatDate(selectedOrder.ordered_at) }}</p>
+              <p v-if="selectedOrder.confirmed_at"><b>Confirmed At:</b> {{ formatDate(selectedOrder.confirmed_at) }}</p>
+              <p v-if="selectedOrder.processed_at"><b>Processed At:</b> {{ formatDate(selectedOrder.processed_at) }}</p>
+              <p v-if="selectedOrder.shipped_at"><b>Shipped At:</b> {{ formatDate(selectedOrder.shipped_at) }}</p>
+              <p v-if="selectedOrder.delivered_at"><b>Delivered At:</b> {{ formatDate(selectedOrder.delivered_at) }}</p>
+              <p v-if="selectedOrder.completed_at"><b>Completed At:</b> {{ formatDate(selectedOrder.completed_at) }}</p>
+              <p v-if="selectedOrder.cancelled_at"><b>Cancelled At:</b> {{ formatDate(selectedOrder.cancelled_at) }}</p>
+            </template>
           </div>
 
-          <div class="flex gap-3 mt-4" v-if="selectedOrder?.order_status === 'pending'">
+          <div class="flex gap-3 mt-4" v-if="selectedOrder && !['completed','cancelled'].includes(selectedOrder.order_status)">
             <button
-                @click="updateStatus(selectedOrder.id, 'confirmed')"
-                class="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700"
-            >
-              Confirm Order
-            </button>
-
+              v-if="selectedOrder.order_status === 'pending'"
+              @click="updateStatus(selectedOrder.id, 'confirmed')"
+              class="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700"
+            >Confirm Order</button>
             <button
-                @click="updateStatus(selectedOrder.id, 'cancelled')"
-                class="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700"
-            >
-              Cancel Order
-            </button>
+              v-if="selectedOrder.order_status === 'confirmed'"
+              @click="updateStatus(selectedOrder.id, 'processed')"
+              class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+            >Mark as Processed</button>
+            <button
+              v-if="selectedOrder.order_status === 'processed'"
+              @click="updateStatus(selectedOrder.id, 'shipped')"
+              class="flex-1 bg-yellow-600 text-white py-2 rounded hover:bg-yellow-700"
+            >Mark as Shipped</button>
+            <button
+              v-if="selectedOrder.order_status === 'shipped'"
+              @click="updateStatus(selectedOrder.id, 'delivered')"
+              class="flex-1 bg-purple-600 text-white py-2 rounded hover:bg-purple-700"
+            >Mark as Delivered</button>
+            <button
+              v-if="selectedOrder.order_status === 'delivered'"
+              @click="updateStatus(selectedOrder.id, 'completed')"
+              class="flex-1 bg-gray-600 text-white py-2 rounded hover:bg-gray-700"
+            >Mark as Completed</button>
+            <button
+              v-if="!['completed','cancelled'].includes(selectedOrder.order_status)"
+              @click="updateStatus(selectedOrder.id, 'cancelled')"
+              class="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700"
+            >Cancel Order</button>
           </div>
-
           <div v-else class="text-sm text-gray-500 text-right mt-4">
             This order is {{ selectedOrder?.order_status }}.
           </div>
@@ -162,31 +188,50 @@ function closeModal() {
 // =====================
 // UPDATE ORDER STATUS
 // =====================
-async function updateStatus(orderId: string, status: 'confirmed' | 'cancelled') {
-  try {
-    modalLoading.value = true
 
-    // Make sure the enum matches Postgres enum exactly
+const statusToTimestampField: Record<string, string> = {
+  confirmed: 'confirmed_at',
+  processed: 'processed_at',
+  shipped: 'shipped_at',
+  delivered: 'delivered_at',
+  completed: 'completed_at',
+  cancelled: 'cancelled_at',
+};
+
+async function updateStatus(orderId: string, status: 'confirmed' | 'cancelled' | 'processed' | 'shipped' | 'delivered' | 'completed') {
+  try {
+    modalLoading.value = true;
+    const updateData: Record<string, any> = { order_status: status };
+    const timestampField = statusToTimestampField[status];
+    if (timestampField) {
+      updateData[timestampField] = new Date().toISOString();
+    }
     const { data, error } = await supabase
-        .from('orders')
-        .update({ order_status: status })
-        .eq('id', orderId)
+      .from('orders')
+      .update(updateData)
+      .eq('id', orderId);
     // Ensure only the seller can update their order
     //.eq('seller_id', currentUserId)
 
-    if (error) throw error
+    if (error) throw error;
 
     // Update local UI
-    const idx = orders.value.findIndex(o => o.id === orderId)
-    if (idx !== -1) orders.value[idx].order_status = status
-    if (selectedOrder.value?.id === orderId) selectedOrder.value.order_status = status
+    const idx = orders.value.findIndex(o => o.id === orderId);
+    if (idx !== -1) {
+      orders.value[idx].order_status = status;
+      if (timestampField) orders.value[idx][timestampField] = updateData[timestampField];
+    }
+    if (selectedOrder.value?.id === orderId) {
+      selectedOrder.value.order_status = status;
+      if (timestampField) selectedOrder.value[timestampField] = updateData[timestampField];
+    }
 
-    closeModal()
+    closeModal();
   } catch (err) {
-    console.error('Failed to update order status', err)
-    alert('Failed to update order: ' + (err as any).message)
+    console.error('Failed to update order status', err);
+    alert('Failed to update order: ' + (err as any).message);
   } finally {
-    modalLoading.value = false
+    modalLoading.value = false;
   }
 }
 

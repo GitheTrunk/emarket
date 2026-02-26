@@ -53,9 +53,15 @@
               <p class="text-gray-500 text-sm mt-1">
                 Sold by: {{ order.seller?.full_name || 'Unknown seller' }}
               </p>
-
             </div>
-
+            <button
+              @click="openModal(order)"
+              class="text-sm font-semibold text-orange-600 hover:text-orange-700 hover:underline transition"
+            >
+              View Details
+            </button>
+            <!-- Single OrderTraking modal for selected order -->
+            <OrderTraking v-if="selectedOrder" :order="selectedOrder" v-model="modalOpen" />
           </div>
         </div>
       </div>
@@ -66,11 +72,19 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import supabase from '@/lib/supabase'
+import OrderTraking from '@/components/buyer/OrderTraking.vue'
 
 const orders = ref<any[]>([])
 const loading = ref(true)
+const modalOpen    = ref(false)
+const selectedOrder = ref<any>(null)
 
 let channel: any = null
+
+function openModal(order: any) {
+  selectedOrder.value = order
+  modalOpen.value = true
+}
 
 // ---------- Fetch buyer orders ----------
 const fetchOrders = async () => {
