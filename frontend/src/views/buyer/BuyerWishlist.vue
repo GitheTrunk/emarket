@@ -245,7 +245,7 @@ const formatDate = (dateString: string) => {
   if (diffDays < 7) return `${diffDays} days ago`
   if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
   if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`
-  return date.toLocaleDateString()
+  return date.toLocaleDateString('km-KH', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
 const showToast = (message: string, type: 'success' | 'error' = 'success') => {

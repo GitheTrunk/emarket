@@ -219,7 +219,7 @@ const getInitials = () => {
 const formatDate = (dateString: string) => {
   if (!dateString) return ''
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  return date.toLocaleDateString('km-KH', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
 const handleAvatarUpload = async (event: Event) => {
