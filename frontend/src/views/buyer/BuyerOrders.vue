@@ -137,7 +137,7 @@ const subscribeToOrders = async () => {
 
 // ---------- Helpers ----------
 const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString('en-US', {
+    new Date(dateStr).toLocaleDateString('km-KH', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'

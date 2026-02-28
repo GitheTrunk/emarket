@@ -32,12 +32,12 @@
               <!-- Loading -->
               <div v-if="loading" class="flex flex-col items-center gap-3 py-16 text-gray-400">
                 <div class="w-7 h-7 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
-                <p class="text-sm">Loading order details…</p>
+                <p class="text-sm">Loading order details</p>
               </div>
 
               <!-- Error -->
               <div v-else-if="error" class="flex flex-col items-center gap-2 py-16 text-red-400">
-                <span class="text-2xl">⚠</span>
+                <span class="text-2xl"><i class="pi pi-exclamation-triangle"></i></span>
                 <p class="text-sm">{{ error }}</p>
               </div>
 
@@ -113,7 +113,7 @@
                           <span class="text-sm font-bold text-gray-900">{{ step.label }}</span>
                           <span v-if="detail.order_status === step.key" class="text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-500 px-2 py-0.5 rounded-full">Current</span>
                         </div>
-                        <p class="text-xs text-gray-500 mb-0.5">Order {{ step.label.toLowerCase() }}</p>
+                        <p v-if="detail.order_status === step.key" class="text-xs text-gray-500 mb-0.5">Order {{ step.label.toLowerCase() }}</p>
                         <p class="text-[11px] text-gray-400">{{ stepDate(step.key) }}</p>
                       </div>
                     </div>
@@ -147,13 +147,12 @@ const error   = ref<string | null>(null)
 
 // Steps config
 const steps = [
-  { key: 'ordered',   label: 'Ordered'   },
   { key: 'confirmed', label: 'Confirmed' },
   { key: 'shipped',   label: 'Shipped'   },
   { key: 'delivered', label: 'Delivered' },
   { key: 'completed', label: 'Completed' },
 ]
-const statusOrder = ['ordered', 'confirmed', 'shipped', 'delivered', 'completed']
+const statusOrder = ['confirmed', 'shipped', 'delivered', 'completed']
 
 // Fetch full order detail when modal opens
 watch(() => props.modelValue, async (open) => {
@@ -183,7 +182,7 @@ async function fetchDetail(orderId: string) {
 
 // Progress
 const currentStepIndex = computed(() =>
-  statusOrder.indexOf(detail.value?.order_status ?? 'ordered')
+  statusOrder.indexOf(detail.value?.order_status ?? 'confirmed')
 )
 
 const progressWidth = computed(() => {
@@ -198,7 +197,6 @@ function stepDone(key: string) {
 function stepDate(key: string) {
   if (!detail.value) return ''
   const map: Record<string, string> = {
-    ordered:   detail.value.ordered_at,
     confirmed: detail.value.confirmed_at,
     shipped:   detail.value.shipped_at,
     delivered: detail.value.delivered_at,
@@ -227,9 +225,9 @@ const orderStatusClass = (status: string) => {
 }
 
 // Date utils 
-const formatDate     = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-const shortDate      = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-const formatDateTime = (iso: string) => new Date(iso).toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+const formatDate     = (iso: string) => new Date(iso).toLocaleDateString('km-KH', { month: 'long', day: 'numeric', year: 'numeric' })
+const shortDate      = (iso: string) => new Date(iso).toLocaleDateString('km-KH', { month: 'short', day: 'numeric' })
+const formatDateTime = (iso: string) => new Date(iso).toLocaleString('km-KH', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 
 const timelineSteps = [
   { key: 'ordered', label: 'Order Placed', time: detail.value?.ordered_at },
